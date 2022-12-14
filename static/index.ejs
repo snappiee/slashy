@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Minggie's Bot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+    <h1 class="text-center">Dank Bot</h1>
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Total Money</h4>
+            <h6 class="text-muted card-subtitle mb-2">Balance View:</h6>
+            <p class="card-text"></p>
+            <p id="wallet">Wallet: &nbsp;</p>
+            <p id="bank">Bank: &nbsp;</p>
+            <p id="net">Net: &nbsp;</p>
+            <p id="rank">Rank: &nbsp;</p>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        fetch("/api")
+            .then(res => res.json())
+            .then(out => {
+                document.getElementById("wallet").innerHTML += out.wallet;
+                document.getElementById("bank").innerHTML += out.bank;
+                document.getElementById("net").innerHTML += out.net;
+                document.getElementById("rank").innerHTML += out.rank;
+            })
+            .catch(err => { throw err });
+
+    </script>
+</body>
+
+</html>
