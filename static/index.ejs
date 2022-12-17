@@ -9,16 +9,17 @@
 </head>
 
 <body>
-    <h1 class="text-center">Dank Bot</h1>
+    <h1 class="text-center">Dank Bot </h1>
     <div class="card">
         <div class="card-body">
             <h4 class="card-title">Total Money</h4>
-            <h6 class="text-muted card-subtitle mb-2">Balance View:</h6>
+            <h6 class="text-muted card-subtitle mb-2">Balance View:
+            </h6>
             <p class="card-text"></p>
             <p id="wallet">Wallet: &nbsp;</p>
             <p id="bank">Bank: &nbsp;</p>
             <p id="net">Net: &nbsp;</p>
-            <p id="rank">Rank: &nbsp;</p>
+            
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -30,7 +31,7 @@
                 document.getElementById("wallet").innerHTML += out.wallet;
                 document.getElementById("bank").innerHTML += out.bank;
                 document.getElementById("net").innerHTML += out.net;
-                document.getElementById("rank").innerHTML += out.rank;
+
             })
             .catch(err => { throw err });
 

@@ -1,0 +1,194 @@
+/// IGNORE FROM HERE, DON'T GO FURTHER
+
+
+
+
+
+//// edit/
+ 1. minigames: 
+
+async function playMiniGames(message, edited = false) {
+  let description = message.embeds[0]?.description?.replace(
+    /<a?(:[^:]*:)\d+>/g,
+    "$1"
+  ); // format emoji <:id:severId> to :id:
+  let positions = description
+    ?.split("\n")
+    .slice(1) //remove first line
+    .map((e) => e.split(":").filter((e) => e !== "")); // split by : and remove blank string
+
+  // INFO: Dodge the Fireball!
+  if (description?.includes("Dodge the Fireball!")) {
+    let fireballPosition = positions[1].length - 1; // 1 is fireball line and length-1 will be postion where fireball is
+    let safePosition = ["Left", "Middle", "Right"].filter(
+      (e, idx) => idx !== fireballPosition
+    );
+
+    let buttons = message.components[0]?.components;
+    let btn = buttons.filter((e) => safePosition.includes(e.label))[
+      randomInteger(0, 1)
+    ]; // filter and remove unsafe position button and select random from 0 or 1 (total 3 button 1 is unsafe other is safe so)
+    await clickButton(message, btn, true);
+  } else if (description?.includes("Catch the fish!")) {
+    let fishPosition = positions[0].length - 1; // here 0 because 2nd line was fish not a dragon like has in dodge fireball
+    let btn = message.components[0]?.components[fishPosition];
+    await clickButton(message, btn, true);
+  } else if (description?.includes("Hit the ball!")) {
+    let ballPosition = positions[1].length - 1; // ball kick pos
+    let kickPosition = ["Left", "Middle", "Right"].filter(
+      (e, idx) => idx !== ballPosition
+    );
+    let buttons = message.components[0]?.components;
+    let btn = buttons.filter((e) => kickPosition.includes(e.label))[
+      randomInteger(0, 1)
+    ]; //filter, remove non kickable pos
+    await clickButton(message, btn, true);
+  } else if (description?.includes("Dunk the ball!")) {
+    let basketballPosition = positions[0].length - 1;
+    let btn = message.components[0]?.components[basketballPosition];
+    await clickButton(message, btn, true);
+  }
+}
+
+
+
+2. handleInventoryCommand:
+
+async function handleInventoryCommand(client, token, channel, message) {
+  await message.channel.sendSlash(botid, "inventory")
+  setTimeout(async () => {
+    var [name, quantity] = message.embeds[0]?.description
+      ?.split("\n")[0]
+      .split("** ─ ");
+    name = name?.split("**")[1];
+
+    console.log(chalk.blue(client.user.tag + " " + name + ": " + quantity));
+    isInventoryEmpty = name != undefined;
+    // INFO: if serverEventsDonateMode enabled
+    if (config.serverEventsDonateMode) {
+      await message.channel.sendSlash(
+        botid,
+        "serverevents donate",
+        quantity,
+        name
+      );
+    }
+    // INFO: when autoGift is enabled and user is not main account
+    else if (config.autoGift && token != config.mainAccount) {
+      // Command preview : /market post for_coins type:sell quantity:1 item:Ant for_coins:1 days:1 allow_partial:False private:
+      
+      await channel.sendSlash(
+        botid,
+        "friends share items",
+        client1.user.id,
+        quantity,
+        name
+        
+      );
+
+      console.log(
+        chalk.blue(
+          client.user.tag +
+          " Shared " +
+          quantity +
+          " " +
+          name +
+          " to main account. "
+        )
+      );
+    }
+  }, randomInteger(300, 700));
+}
+
+
+
+3. auto use Horseshoe/ pizza
+
+async function autoUseHorse(message, client) {
+  if (message.interaction?.user !== client.user) return;
+  let description = message.embeds[0]?.description;
+  if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
+    setTimeout(async () => {
+      await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
+    }, randomInteger(300000, 400000));
+  } else {
+    if (
+      !message.embeds[0]?.title?.includes("Lucky Horseshoe") ||
+      !description?.includes("own") ||
+      !config.autoUse.includes("Lucky Horseshoe")
+    )
+      return;
+    const total_own = description.match(/own \*\*(\d+)/)[1];
+    if (!total_own) return;
+    if (Number(total_own) > 0) {
+      await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
+      !config["dontLogUselessThings"] &&
+        console.log(chalk.green("Succesfully used a Lucky Horseshoe"));
+    }
+    setTimeout(async () => {
+      await message.channel.sendSlash(botid, "item", "Lucky Horseshoe");
+    }, randomInteger(700000, 800000));
+  }
+}
+
+async function autoUsePizza(message, client) {
+  if (message.interaction?.user !== client.user) return;
+  let description = message.embeds[0]?.description;
+  if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
+    setTimeout(async () => {
+      await message.channel.sendSlash(botid, "use", "Pizza");
+    }, randomInteger(1000000, 2000000));
+  } else {
+    if (
+      !message.embeds[0]?.title?.includes("Pizza") ||
+      !description?.includes("own") ||
+      !config.autoUse.includes("Pizza")
+    )
+      return;
+    const total_own = description.match(/own \*\*(\d+)/)[1];
+    if (!total_own) return;
+    if (Number(total_own) > 0) {
+      await message.channel.sendSlash(botid, "use", "Pizza");
+      !config["dontLogUselessThings"] &&
+        console.log(chalk.green("Succesfully used a Pizza"));
+    }
+    setTimeout(async () => {
+      await message.channel.sendSlash(botid, "item", "Pizza");
+    }, randomInteger(3000000, 4000000));
+  }
+}
+
+
+
+4. use items
+
+autoBuyItem(message, client, acc_bal, acc_bank);
+    autoToolBuyer(message, client, acc_bal, acc_bank);
+    autoUseHorse(message, client);
+    autoUsePizza(message, client);
+
+
+5. starting bot
+
+
+
+await channel.sendSlash(botid, "use", "apple");
+
+    await channel.sendSlash(botid, "daily"); 
+
+    await channel.sendSlash(botid, "deposit", "max");
+
+    await channel.sendSlash(botid, "item", "pizza");
+
+6. giveaway view
+
+
+
+
+if (
+      commandsUsed.includes("giveaway view") &&
+      message.embeds[0]?.description?.includes("Author")
+      
+    ) {
+      clickRandomButton(message, 0);
+    }
