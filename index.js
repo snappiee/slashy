@@ -4,101 +4,73 @@ const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
 const chalk = require("chalk");
-const config = process.env.JSON
-  ? JSON.parse(process.env.JSON)
-  : require("./config.json");
-const { Webhook, MessageBuilder } = require("discord-webhook-node");
-
+const config = process.env.JSON ? JSON.parse(process.env.JSON) : require("./config.json");
+const {
+  Webhook,
+  MessageBuilder
+} = require("discord-webhook-node");
 const hook = new Webhook(config.webhook);
-
-axios
-  .get("https://raw.githubusercontent.com/TahaGorme/slashy/main/index.js")
-  .then(function(response) {
-    var d = response.data;
-    let v = d.match(/Version ([0-9]*\.?)+/)[0]?.replace("Version ", "");
-    if (v) {
-      console.log(chalk.bold("Version " + version));
-      if (v !== version) {
-        console.log(
-          chalk.bold.bgRed(
-            "There is a new version available: " +
-            v +
-            "           \nPlease update. " +
-            chalk.underline(
-              "https://github.com/TahaGorme/slashy"
-            )
-          )
-        );
-
-
-      }
+axios.get("https://raw.githubusercontent.com/TahaGorme/slashy/main/index.js").then(function(response) {
+  var d = response.data;
+  let v = d.match(/Version ([0-9]*\.?)+/)[0]?.replace("Version ", "");
+  if (v) {
+    console.log(chalk.bold("Version " + version));
+    if (v !== version) {
+      console.log(chalk.bold.bgRed("There is a new version available: " + v + "           \nPlease update. " + chalk.underline("https://github.com/TahaGorme/slashy")));
     }
-  })
-  .catch(function(error) {
-    console.log(error);
-  });
-
+  }
+}).catch(function(error) {
+  console.log(error);
+});
 process.on("unhandledRejection", (reason, p) => {
-  const ignoreErrors = [
-    "MESSAGE_ID_NOT_FOUND",
-    "INTERACTION_TIMEOUT",
-    "BUTTON_NOT_FOUND",
-  ];
+  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND", ];
   if (ignoreErrors.includes(reason.code || reason.message)) return;
   console.log(" [Anti Crash] >>  Unhandled Rejection/Catch");
   console.log(reason, p);
 });
-
 process.on("uncaughtException", (e, o) => {
   console.log(" [Anti Crash] >>  Uncaught Exception/Catch");
   console.log(e, o);
 });
-
 process.on("uncaughtExceptionMonitor", (err, origin) => {
   console.log(" [AntiCrash] >>  Uncaught Exception/Catch (MONITOR)");
   console.log(err, origin);
 });
-
 process.on("multipleResolves", (type, promise, reason) => {
   console.log(" [AntiCrash] >>  Multiple Resolves");
   console.log(type, promise, reason);
 });
 const figlet = require("figlet");
 const fs = require("fs-extra");
-
 const botid = "270904126974590976";
 var bank = 0;
 var wallet = 0;
 var net = 0;
 var rank = 0;
-
 // const config = require("./config.json");
-
 // INFO: Load batch token file if enabled
 if (config.isBatchTokenFile) {
   let data = process.env.TOKENS;
   if (!data) data = fs.readFileSync("./batch_token.cfg", "utf-8");
   config.tokens = data.split("\n").reduce((previousTokens, line) => {
     let [channelId, token] = line.replace("\r", "").split(" ");
-    return [...previousTokens, { channelId, token }];
+    return [...previousTokens, {
+      channelId,
+      token
+    }];
   }, []);
 }
-
 var express = require("express");
 var app = express();
 app.set("view engine", "ejs");
-
 app.enable("trust proxy");
 app.use(cors());
-
 // set the view engine to ejs
-
 app.get("/", async (req, res) => {
   res.render(path.resolve("./static"), {
     //   "progressValue": pr
   });
 });
-
 app.get("/api", async (req, res) => {
   res.json({
     bank: bank,
@@ -107,37 +79,25 @@ app.get("/api", async (req, res) => {
     rank: rank,
   });
 });
-
 app.listen(7500);
-console.log(
-  chalk.bold.red(
-    "Server started on " + chalk.underline("http://localhost:7500")
-  )
-);
-
-const { Client } = require("discord.js-selfbot-v13");
-const { randomInt } = require("crypto");
-
-const client1 = new Client({ checkUpdate: false, readyStatus: false });
-
+console.log(chalk.bold.red("Server started on " + chalk.underline("http://localhost:7500")));
+const {
+  Client
+} = require("discord.js-selfbot-v13");
+const {
+  randomInt
+} = require("crypto");
+const client1 = new Client({
+  checkUpdate: false,
+  readyStatus: false
+});
 client1.on("ready", async () => {
-  console.log(
-    chalk.bold.magenta(`Logged in to Main Account as ${client1.user.tag}!`)
-  );
+  console.log(chalk.bold.magenta(`Logged in to Main Account as ${client1.user.tag}!`));
   client1.user.setStatus("invisible");
-
-  hook.send(
-    new MessageBuilder()
-      .setTitle("Started Slashy")
-      .setURL("https://github.com/TahaGorme/Slashy")
-      .setDescription(
-        "Started grinding on " + config.tokens.length + " accounts."
-      )
-      .setColor("#2e3236")
+  hook.send(new MessageBuilder().setTitle("Started Slashy").setURL("https://github.com/TahaGorme/Slashy").setDescription("Started grinding on " + config.tokens.length + " accounts.").setColor("#2e3236")
     //.setTimestamp()
   );
   const channel1 = client1.channels.cache.get(config.mainId.channel);
-
   // INFO: Item Use
   config.mainId.itemToUse.forEach((item) => {
     setInterval(async () => {
@@ -145,39 +105,22 @@ client1.on("ready", async () => {
     }, randomInteger(1000000, 1500000));
   });
 });
-
-
 // INFO: register main account events
 client1.on("messageCreate", async (message) => {
   // INFO: when we send "/market post" and receive responsed
-  if (
-    config.autoGift &&
-    randomInteger(1, 100) == 60
-  ) {
-    
+  if (config.autoGift && randomInteger(1, 100) == 60) {
     handleInventoryCommand(message.channel.id, message);
   }
-
-  
   // INFO: Play Minigame
-
   // INFO: Register captcha
   handleCaptcha(message);
-
   const channel1 = client1.channels.cache.get(config.mainId.channel);
-
 });
-
 client1.login(config.mainAccount);
 start();
 async function start() {
   for (var i = 0; i < config.tokens.length; i++) {
-    await doEverything(
-      config.tokens[i].token,
-      Client,
-      client1,
-      config.tokens[i].channelId
-    );
+    await doEverything(config.tokens[i].token, Client, client1, config.tokens[i].channelId);
   }
 }
 async function doEverything(token, Client, client1, channelId) {
@@ -186,15 +129,14 @@ async function doEverything(token, Client, client1, channelId) {
   var channel;
   var acc_bal = 0;
   var acc_bank = 0;
-
-  const client = new Client({ checkUpdate: false, readyStatus: false });
+  const client = new Client({
+    checkUpdate: false,
+    readyStatus: false
+  });
   var commandsUsed = [];
   var ongoingCommand = false;
-
   async function findAnswer(question) {
-    const file = config.useDarkendTrivia
-      ? "./darkend-trivia.json"
-      : "./trivia.json";
+    const file = config.useDarkendTrivia ? "./darkend-trivia.json" : "./trivia.json";
     const trivia = await fs.readJson(file);
     if (config.useDarkendTrivia) {
       return trivia[question];
@@ -206,39 +148,22 @@ async function doEverything(token, Client, client1, channelId) {
       }
     }
   }
-
   client.on("ready", async () => {
     client.user.setStatus("invisible");
-
-
-    console.log(
-      chalk.green(`Logged in as ${chalk.cyanBright(client.user.tag)}`)
-    );
-
+    console.log(chalk.green(`Logged in as ${chalk.cyanBright(client.user.tag)}`));
     channel = client.channels.cache.get(channelId);
-    if (!channel)
-      return console.log(chalk.red("Channel not found! " + channelId));
-
+    if (!channel) return console.log(chalk.red("Channel not found! " + channelId));
     // console.log(chalk.magenta("Playing Dank Memer in " + channel.name));
-    !config["dontLogUselessThings"] &&
-      hook.send("Started. Playing Dank Memer in <#" + channel.id + ">");
+    !config["dontLogUselessThings"] && hook.send("Started. Playing Dank Memer in <#" + channel.id + ">");
     if (config.transferOnlyMode || config.serverEventsDonateMode) {
-      console.log(
-        chalk.red(
-          "Transfer Only Mode or Server Events Donate is enabled."
-        )
-      );
+      console.log(chalk.red("Transfer Only Mode or Server Events Donate is enabled."));
       inv(botid, channel);
       return;
     }
     await channel.sendSlash(botid, "use", "apple");
-
-    await channel.sendSlash(botid, "daily"); 
-
+    await channel.sendSlash(botid, "daily");
     await channel.sendSlash(botid, "item", "horseshoe");
-
     await channel.sendSlash(botid, "item", "pizza");
-
     main(channel);
     config.autoUse.forEach((item) => {
       setTimeout(async () => {
@@ -246,79 +171,40 @@ async function doEverything(token, Client, client1, channelId) {
       }, randomInteger(1000000, 1500000));
     });
   });
-
   client.on("messageUpdate", async (oldMessage, newMessage) => {
     if (newMessage.interaction?.user !== client.user) return;
-    if (
-      newMessage.author?.id !== botid ||
-      newMessage.channel.id != channelId
-    )
-      return;
-
+    if (newMessage.author?.id !== botid || newMessage.channel.id != channelId) return;
     playMiniGames(newMessage, true);
     playFGame(newMessage, channelId);
     // INFO: Caught :
-    let isCaught = newMessage.embeds[0]?.description?.match(
-      /(Dragon|Kraken|Legendary Fish|Mole Man|Zig's Capybara), nice (shot|catch)!/
-    ); //null or Array eg. ["Dragon, nice shot!","Dragon","shot"] => [whole match,group1,group2]
+    let isCaught = newMessage.embeds[0]?.description?.match(/(Dragon|Kraken|Legendary Fish|Mole Man|Zig's Capybara), nice (shot|catch)!/); //null or Array eg. ["Dragon, nice shot!","Dragon","shot"] => [whole match,group1,group2]
     if (isCaught) {
       let [_, item, action] = isCaught; //yeah dragon, fish and kraken are item in dank memer
       // action : shot or catch
-
-      hook.send(
-        new MessageBuilder()
-          .setTitle("Minigame Boss: " + item)
-          .setURL(newMessage.url)
-          .setDescription(
-            client.user.username +
-            " just caught a **" +
-            item +
-            "**!"
-          )
-          .setColor("#2e3236")
-          .setTimestamp()
-      );
+      hook.send(new MessageBuilder().setTitle("Minigame Boss: " + item).setURL(newMessage.url).setDescription(client.user.username + " just caught a **" + item + "**!").setColor("#2e3236").setTimestamp());
     }
     // INFO: confirm donate
-    if (
-      newMessage.embeds[0]?.title?.includes("Action Confirmed") &&
-      newMessage.embeds[0].description?.includes(
-        "Are you sure you want to donate your items?"
-      )
-    ) {
+    if (newMessage.embeds[0]?.title?.includes("Action Confirmed") && newMessage.embeds[0].description?.includes("Are you sure you want to donate your items?")) {
       setTimeout(async () => {
         if (isInventoryEmpty) {
           if (isServerPoolEmpty) return;
-          if (config.serverEventsDonatePayout)
-            await newMessage.channel.sendSlash(
-              botid,
-              "serverevents pool"
-            );
+          if (config.serverEventsDonatePayout) await newMessage.channel.sendSlash(botid, "serverevents pool");
         } else {
           await newMessage.channel.sendSlash(botid, "inventory");
         }
       }, randomInteger(config.cooldowns.serverEvents.minDelay, config.cooldowns.serverEvents.maxDelay));
     }
     // INFO: when posted memes is dead meme ( /postmemes )
-    
   });
-
   client.on("messageCreate", async (message) => {
     // INFO: read alerts
-    if (
-      message.embeds[0]?.title?.includes("You have an unread alert!") &&
-      message.content?.includes(client.user.id)
-    ) {
+    if (message.embeds[0]?.title?.includes("You have an unread alert!") && message.content?.includes(client.user.id)) {
       await channel.sendSlash(botid, "alert");
     }
     playFGame(message, channelId);
-
     // playFGame(message,channel.id);
-
     // INFO: when /serverevents payout used and "Only event managers can payout from the server's pool!" is displayed
     // TODO: move to dedicated function
-
-
     if (message.interaction?.user == client.user && message?.embeds[0]?.description?.includes("To start your streaming journey, you need following")) {
       // console.log(acc_bal)
       // console.log(acc_bank)
@@ -327,7 +213,6 @@ async function doEverything(token, Client, client1, channelId) {
         setTimeout(async () => {
           await message.channel.sendSlash(botid, "shop buy", "Keyboard", "1");
         }, randomInteger(2000, 4000));
-
       } else if (Number(acc_bal) < 200000 && Number(acc_bank) >= 200000) {
         await message.channel.sendSlash(botid, "withdraw", "200k");
         setTimeout(async () => {
@@ -336,533 +221,262 @@ async function doEverything(token, Client, client1, channelId) {
         setTimeout(async () => {
           await message.channel.sendSlash(botid, "shop buy", "Keyboard", "1");
         }, randomInteger(2000, 4000));
-
-
-
       }
     }
-
-    if (
-      message.embeds[0]?.description?.includes("from the server's pool!")
-    ) {
+    if (message.embeds[0]?.description?.includes("from the server's pool!")) {
       if (isServerPoolEmpty) {
         inv(botid, channel);
       } else {
         setTimeout(async () => {
           // await message.channel.sendSlash(botid, "inventory")
-          if (config.serverEventsDonatePayout)
-            await message.channel.sendSlash(
-              botid,
-              "serverevents pool"
-            );
+          if (config.serverEventsDonatePayout) await message.channel.sendSlash(botid, "serverevents pool");
         }, randomInteger(config.cooldowns.serverEvents.minDelay, config.cooldowns.serverEvents.maxDelay));
       }
     }
-
-    if (
-      message.interaction?.user !== client.user ||
-      message.author.id !== botid ||
-      !channel
-    )
-      return;
-
+    if (message.interaction?.user !== client.user || message.author.id !== botid || !channel) return;
     autoBuyItem(message, client, acc_bal, acc_bank);
     autoToolBuyer(message, client, acc_bal, acc_bank);
     autoUseHorse(message, client);
     autoUsePizza(message, client);
-
-    if (message.author.id !== botid || message.channel.id !== channel.id)
-      return;
+    if (message.author.id !== botid || message.channel.id !== channel.id) return;
     // console.log(message.embeds[0])
-
     // // if (message.mentions.has(client.user.id)) {
     // if (message.embeds[0] && message.embeds[0].title && message.embeds[0].title.includes(client.user.username + "'s Meme Posting Session") && message.embeds[0].description) {
     //     //to be added later
-
     // }
     playMiniGames(message);
     playFGame(message, channel.id);
-
-    if (
-      commandsUsed.includes("postmemes") &&
-      message.embeds[0]?.description?.includes(
-        "Pick a meme type and a platform to post a meme on!"
-      )
-    ) {
+    if (commandsUsed.includes("postmemes") && message.embeds[0]?.description?.includes("Pick a meme type and a platform to post a meme on!")) {
       postMeme(message);
     }
-
     // INFO: when inventory is empty
     // TODO: move to dedicated function
-    if (
-      message.embeds[0]?.description?.includes("Yikes, you have nothing")
-    ) {
+    if (message.embeds[0]?.description?.includes("Yikes, you have nothing")) {
       isInventoryEmpty = true;
       if (config.serverEventsDonateMode) {
         setTimeout(async () => {
           // await message.channel.sendSlash(botid, "inventory")
           if (!(isInventoryEmpty && isServerPoolEmpty)) {
-            if (config.serverEventsDonatePayout)
-              await message.channel.sendSlash(
-                botid,
-                "serverevents pool"
-              );
+            if (config.serverEventsDonatePayout) await message.channel.sendSlash(botid, "serverevents pool");
           }
         }, randomInteger(config.cooldowns.serverEvents.minDelay, config.cooldowns.serverEvents.maxDelay));
       }
-
       if (config.serverEventsDonateMode || config.transferOnlyMode) {
         if (isInventoryEmpty && isServerPoolEmpty) {
-          console.log(
-            chalk.green(
-              client.user.tag + " - All items transferred :D"
-            )
-          );
+          console.log(chalk.green(client.user.tag + " - All items transferred :D"));
           return;
         }
-
         // return;
       }
     }
-
     // INFO: when current account inventory is displayed
-    if (
-      message.embeds[0]?.author?.name.includes(
-        client.user.username + "'s inventory"
-      )
-    ) {
+    if (message.embeds[0]?.author?.name.includes(client.user.username + "'s inventory")) {
       handleInventoryCommand(client, token, channel, message);
     }
-
     // INFO: when /serverevents pool and event items are shown
     // TODO: move to dedicated function
-    if (
-      message.embeds[0]?.title?.includes("Server Pool") &&
-      config.serverEventsDonateMode
-    ) {
+    if (message.embeds[0]?.title?.includes("Server Pool") && config.serverEventsDonateMode) {
       setTimeout(async () => {
         if (!message.embeds[0].description.includes("> ")) {
           isServerPoolEmpty = true;
           inv(botid, channel);
           return;
         }
-        var name = message.embeds[0].description
-          .split("\n")[7]
-          .split("> ")[1];
-        var quantity = message.embeds[0].description
-          .split("\n")[7]
-          .split("x`")[0]
-          .split("`")[1];
+        var name = message.embeds[0].description.split("\n")[7].split("> ")[1];
+        var quantity = message.embeds[0].description.split("\n")[7].split("x`")[0].split("`")[1];
         console.log(name + ": " + quantity);
         if (!name) return;
         if (!quantity) return;
         var main_accId = client1.user.id;
         isServerPoolEmpty = false;
-
-        await message.channel.sendSlash(
-          botid,
-          "serverevents payout",
-          main_accId,
-          quantity,
-          name
-        );
+        await message.channel.sendSlash(botid, "serverevents payout", main_accId, quantity, name);
       }, randomInteger(config.cooldowns.serverEvents.minDelay, config.cooldowns.serverEvents.maxDelay));
     }
-
-
-    if (
-      config.autoGift &&
-      token != config.mainAccount &&
-      message.embeds[0]?.description?.includes(
-        "To post this offer, you will pay a fee"
-      )
-    ) {
+    if (config.autoGift && token != config.mainAccount && message.embeds[0]?.description?.includes("To post this offer, you will pay a fee")) {
       transfer(message, 1);
     }
-
     if (message.embeds[0]?.title === "Pending Confirmation") {
       highLowRandom(message, 1);
-
       // console.log(chalk.yellow("Sold all sellable items."))
     }
-
     // INFO: Register captchal
     handleCaptcha(message);
-
     // INFO: Return if transferOnlyMode is enabled
     if (config.transferOnlyMode) return;
-
     // INFO: When receive response of /balance command
-    if (
-      message.embeds[0]?.title?.includes(client.user.tag + "'s Balance")
-    ) {
-      wallet = message.embeds[0].description
-        .split("\n")[0]
-        .replace("**Wallet**: ", "");
+    if (message.embeds[0]?.title?.includes(client.user.tag + "'s Balance")) {
+      wallet = message.embeds[0].description.split("\n")[0].replace("**Wallet**: ", "");
       acc_bal = Number(wallet.replace("⏣ ", "").replace(/,/g, ''));
-      bank = message.embeds[0].description
-        .split("\n")[1]
-        .replace("**Bank**: ", "");
+      bank = message.embeds[0].description.split("\n")[1].replace("**Bank**: ", "");
       acc_bank = Number(bank.replace("⏣ ", "").replace(/,/g, '').replace(" ", "").split("/")[0]);
-      net = message.embeds[0].description
-        .split("\n")[6]
-        .replace("**Total Net**: ", "");
-      
+      net = message.embeds[0].description.split("\n")[6].replace("**Total Net**: ", "");
     }
-
     // INFO: Handle Search Command
-    if (
-      commandsUsed.includes("search") &&
-      message.embeds[0]?.description?.includes(
-        "Where do you want to search?"
-      )
-    ) {
+    if (commandsUsed.includes("search") && message.embeds[0]?.description?.includes("Where do you want to search?")) {
       handleSearch(message);
     }
-
     // INFO: Handle Crime Command
-    if (
-      commandsUsed.includes("crime") &&
-      message.embeds[0]?.description?.includes(
-        "What crime do you want to commit?"
-      )
-    ) {
+    if (commandsUsed.includes("crime") && message.embeds[0]?.description?.includes("What crime do you want to commit?")) {
       clickRandomButton(message, 0);
     }
-
-    if (
-      commandsUsed.includes("giveaway view") &&
-      message.embeds[0]?.description?.includes("Author")
-      
-    ) {
+    if (commandsUsed.includes("giveaway view") && message.embeds[0]?.description?.includes("Author")) {
       GiveawayEnter(message, 0);
     }
-    
     // INFO: Handle Trivia Command
-    if (
-      commandsUsed.includes("trivia") &&
-      message.embeds[0]?.description?.includes(" seconds to answer*")
-    ) {
+    if (commandsUsed.includes("trivia") && message.embeds[0]?.description?.includes(" seconds to answer*")) {
       var time = message.embeds[0].description;
-      var question = message.embeds[0].description
-        .replace(/\*/g, "")
-        .split("\n")[0]
-        .split('"')[0];
-
+      var question = message.embeds[0].description.replace(/\*/g, "").split("\n")[0].split('"')[0];
       let answer = await findAnswer(question);
-
       if (answer) selectTriviaAnswers(message, answer);
       else {
         clickRandomButton(message, 0);
         console.log("Unknown trivia")
       }
     }
-
     // INFO: Handle HighLow Command
-    if (
-      commandsUsed.includes("highlow") &&
-      message.embeds[0]?.description?.includes(
-        "I just chose a secret number between 1 and 100."
-      )
-    ) {
-      var c = parseInt(
-        message.embeds[0].description
-          .split(" **")[1]
-          .replace("**?", "")
-          .trim()
-      );
-
+    if (commandsUsed.includes("highlow") && message.embeds[0]?.description?.includes("I just chose a secret number between 1 and 100.")) {
+      var c = parseInt(message.embeds[0].description.split(" **")[1].replace("**?", "").trim());
       highLowRandom(message, c > 50 ? 0 : 2);
     }
-
     // INFO: Handle Stream Command
-
-    if (
-      commandsUsed.includes("stream") &&
-      message.embeds[0]?.author?.name.includes(" Stream Manager")
-    ) {
+    if (commandsUsed.includes("stream") && message.embeds[0]?.author?.name.includes(" Stream Manager")) {
       if (message.embeds[0].fields[1].name !== "Live Since") {
         const components = message.components[0]?.components;
-
-        if (
-          components[0].type !== "SELECT_MENU" &&
-          components[0].label.includes("Go Live")
-        ) {
+        if (components[0].type !== "SELECT_MENU" && components[0].label.includes("Go Live")) {
           await message.clickButton(components[0].customId);
-
-          setTimeout(
-            async () => {
-              if (
-                message.components[0].components[0].type ==
-                "SELECT_MENU"
-              ) {
-                const Games = [
-                  "Apex Legends",
-                  "COD MW2",
-                  "CS GO",
-                  "Dead by Daylight",
-                  "Destiny 2",
-                  "Dota 2",
-                  "Elden Ring",
-                  "Escape from Tarkov",
-                  "FIFA 22",
-                  "Fortnite",
-                  "Grand Theft Auto V",
-                  "Hearthstone",
-                  "Just Chatting",
-                  "League of Legends",
-                  "Lost Ark",
-                  "Minecraft",
-                  "PUBG Battlegrounds",
-                  "Rainbox Six Siege",
-                  "Rocket League",
-                  "Rust",
-                  "Teamfight Tactics",
-                  "Valorant",
-                  "Warzone 2",
-                  "World of Tanks",
-                  "World of Warcraft",
-                ];
-                const Game =
-                  Games[
-                  Math.floor(Math.random() * Games.length)
-                  ];
-                const GamesMenu =
-                  message.components[0].components[0]
-                    .customId;
+          setTimeout(async () => {
+              if (message.components[0].components[0].type == "SELECT_MENU") {
+                const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft", ];
+                const Game = Games[Math.floor(Math.random() * Games.length)];
+                const GamesMenu = message.components[0].components[0].customId;
                 await message.selectMenu(GamesMenu, [Game]);
               } else {
                 return;
               }
-
-              setTimeout(
-                async () => {
-                  const components2 =
-                    message.components[1]?.components;
-
-                  setTimeout(
-                    async () => {
+              setTimeout(async () => {
+                  const components2 = message.components[1]?.components;
+                  setTimeout(async () => {
                       if (components2[0]) {
-                        await message.clickButton(
-                          components2[0].customId
-                        );
+                        await message.clickButton(components2[0].customId);
                       } else {
-                        await message.clickButton(
-                          components2[0].customId
-                        );
+                        await message.clickButton(components2[0].customId);
                       }
                     },
                     1000,
-                    1600
-                  );
+                    1600);
                 },
                 config.cooldowns.buttonClick.minDelay,
-                config.cooldowns.buttonClick.maxDelay
-              );
-
-              setTimeout(
-                async () => {
+                config.cooldowns.buttonClick.maxDelay);
+              setTimeout(async () => {
                   const check = randomInteger(0, 6);
-
                   if (check == 0 || check == 1) {
-                    await message.clickButton(
-                      message.components[0]?.components[0]
-                        .customId
-                    );
-                  } else if (
-                    check == 2 ||
-                    check == 3 ||
-                    check == 4 ||
-                    check == 5
-                  ) {
-                    await message.clickButton(
-                      message.components[0]?.components[1]
-                        ?.customId
-                    );
+                    await message.clickButton(message.components[0]?.components[0].customId);
+                  } else if (check == 2 || check == 3 || check == 4 || check == 5) {
+                    await message.clickButton(message.components[0]?.components[1]?.customId);
                   } else if (check == 6) {
-                    await message.clickButton(
-                      message.components[0]?.components[2]
-                        .customId
-                    );
+                    await message.clickButton(message.components[0]?.components[2].customId);
                   }
                 },
                 config.cooldowns.buttonClick.minDelay,
-                config.cooldowns.buttonClick.maxDelay
-              );
+                config.cooldowns.buttonClick.maxDelay);
             },
             config.cooldowns.buttonClick.minDelay,
-            config.cooldowns.buttonClick.maxDelay * 1.5
-          );
+            config.cooldowns.buttonClick.maxDelay * 1.5);
         }
       } else if (message.embeds[0].fields[1].name == "Live Since") {
         const check = randomInteger(0, 6);
-
         if (check == 0 || check == 1) {
-          await message.clickButton(
-            message.components[0]?.components[0].customId
-          );
-        } else if (
-          check == 2 ||
-          check == 3 ||
-          check == 4 ||
-          check == 5
-        ) {
-          await message.clickButton(
-            message.components[0]?.components[1].customId
-          );
+          await message.clickButton(message.components[0]?.components[0].customId);
+        } else if (check == 2 || check == 3 || check == 4 || check == 5) {
+          await message.clickButton(message.components[0]?.components[1].customId);
         } else if (check == 6) {
-          await message.clickButton(
-            message.components[0]?.components[2].customId
-          );
+          await message.clickButton(message.components[0]?.components[2].customId);
         }
       }
     }
   });
-
   client.login(token);
-
-
   async function autoUseHorse(message, client) {
-  if (message.interaction?.user !== client.user) return;
-  let description = message.embeds[0]?.description;
-  if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
-    setTimeout(async () => {
-      await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
-    }, randomInteger(300000, 400000));
-  } else {
-    if (
-      !message.embeds[0]?.title?.includes("Lucky Horseshoe") ||
-      !description?.includes("own") ||
-      !config.autoUse.includes("Lucky Horseshoe")
-    )
-      return;
-    const total_own = description.match(/own \*\*(\d+)/)[1];
-    if (!total_own) return;
-    if (Number(total_own) > 0) {
-      await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
-      !config["dontLogUselessThings"] &&
-        console.log(chalk.green("Succesfully used a Lucky Horseshoe"));
+    if (message.interaction?.user !== client.user) return;
+    let description = message.embeds[0]?.description;
+    if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
+      setTimeout(async () => {
+        await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
+      }, randomInteger(300000, 400000));
+    } else {
+      if (!message.embeds[0]?.title?.includes("Lucky Horseshoe") || !description?.includes("own") || !config.autoUse.includes("Lucky Horseshoe")) return;
+      const total_own = description.match(/own \*\*(\d+)/)[1];
+      if (!total_own) return;
+      if (Number(total_own) > 0) {
+        await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
+        !config["dontLogUselessThings"] && console.log(chalk.green("Succesfully used a Lucky Horseshoe"));
+      }
+      setTimeout(async () => {
+        await message.channel.sendSlash(botid, "item", "Lucky Horseshoe");
+      }, randomInteger(700000, 800000));
     }
-    setTimeout(async () => {
-      await message.channel.sendSlash(botid, "item", "Lucky Horseshoe");
-    }, randomInteger(700000, 800000));
   }
-}
-
-async function autoUsePizza(message, client) {
-  if (message.interaction?.user !== client.user) return;
-  let description = message.embeds[0]?.description;
-  if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
-    setTimeout(async () => {
-      await message.channel.sendSlash(botid, "use", "Pizza");
-    }, randomInteger(1000000, 2000000));
-  } else {
-    if (
-      !message.embeds[0]?.title?.includes("Pizza") ||
-      !description?.includes("own") ||
-      !config.autoUse.includes("Pizza")
-    )
-      return;
-    const total_own = description.match(/own \*\*(\d+)/)[1];
-    if (!total_own) return;
-    if (Number(total_own) > 0) {
-      await message.channel.sendSlash(botid, "use", "Pizza");
-      !config["dontLogUselessThings"] &&
-        console.log(chalk.green("Succesfully used a Pizza"));
+  async function autoUsePizza(message, client) {
+    if (message.interaction?.user !== client.user) return;
+    let description = message.embeds[0]?.description;
+    if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
+      setTimeout(async () => {
+        await message.channel.sendSlash(botid, "use", "Pizza");
+      }, randomInteger(1000000, 2000000));
+    } else {
+      if (!message.embeds[0]?.title?.includes("Pizza") || !description?.includes("own") || !config.autoUse.includes("Pizza")) return;
+      const total_own = description.match(/own \*\*(\d+)/)[1];
+      if (!total_own) return;
+      if (Number(total_own) > 0) {
+        await message.channel.sendSlash(botid, "use", "Pizza");
+        !config["dontLogUselessThings"] && console.log(chalk.green("Succesfully used a Pizza"));
+      }
+      setTimeout(async () => {
+        await message.channel.sendSlash(botid, "item", "Pizza");
+      }, randomInteger(3000000, 4000000));
     }
-    setTimeout(async () => {
-      await message.channel.sendSlash(botid, "item", "Pizza");
-    }, randomInteger(3000000, 4000000));
   }
-}
-
   async function main(channel) {
-    var a = randomInteger(
-      config.cooldowns.commandInterval.minDelay,
-      config.cooldowns.commandInterval.maxDelay
-    );
-    var b = randomInteger(
-      config.cooldowns.shortBreak.minDelay,
-      config.cooldowns.shortBreak.maxDelay
-    );
-
-    var c = randomInteger(
-      config.cooldowns.longBreak.minDelay,
-      config.cooldowns.longBreak.maxDelay
-    );
-
+    var a = randomInteger(config.cooldowns.commandInterval.minDelay, config.cooldowns.commandInterval.maxDelay);
+    var b = randomInteger(config.cooldowns.shortBreak.minDelay, config.cooldowns.shortBreak.maxDelay);
+    var c = randomInteger(config.cooldowns.longBreak.minDelay, config.cooldowns.longBreak.maxDelay);
     randomCommand(client, channel, commandsUsed);
-
     // INFO: Deposit money
     if (config.autoDeposit && randomInteger(0, 40) === 2) {
       await channel.sendSlash(botid, "deposit", "max");
-      !config["dontLogUselessThings"] &&
-        console.log(chalk.yellow("Deposited all coins in the bank."));
-
+      !config["dontLogUselessThings"] && console.log(chalk.yellow("Deposited all coins in the bank."));
       setTimeout(async () => {
         await channel.sendSlash(botid, "balance");
       }, randomInteger(3000, 7000));
-
     }
-
     // INFO: if autoGift is on send inventory command
-    if (
-      !config.transferOnlyMode &&
-      config.autoGift &&
-      token != config.mainAccount &&
-      randomInteger(0, 90) === 7
-    ) {
+    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 90) === 7) {
       await channel.sendSlash(botid, "inventory");
     }
-
     if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
       await channel.sendSlash(botid, "balance");
     }
-
     // setInterval(async () => {
-
-    if (
-      !config.transferOnlyMode &&
-      config.autoBuy &&
-      randomInteger(0, 300) === 3
-    ) {
+    if (!config.transferOnlyMode && config.autoBuy && randomInteger(0, 300) === 3) {
       Object.keys(config.autoBuyItems).forEach((item) => {
         setTimeout(async () => {
           await channel.sendSlash(botid, "item", item);
         }, randomInteger(390000, 500000));
       });
     }
-
-    if (
-      config.autoSell &&
-      token != config.mainAccount &&
-      randomInteger(0, 4) === 100
-    ) {
+    if (config.autoSell && token != config.mainAccount && randomInteger(0, 4) === 100) {
       await channel.sendSlash(botid, "sell all");
     }
-
     // INFO: Logic of taking break
     if (randomInteger(0, 130) == 50) {
-      !config["dontLogUselessThings"] &&
-        console.log(
-          "\x1b[34m",
-          "Taking a break for " + b / 1000 + " seconds."
-        );
-      !config["dontLogUselessThings"] &&
-        hook.send("Taking a break for " + b / 1000 + " seconds.");
-
+      !config["dontLogUselessThings"] && console.log("\x1b[34m", "Taking a break for " + b / 1000 + " seconds.");
+      !config["dontLogUselessThings"] && hook.send("Taking a break for " + b / 1000 + " seconds.");
       setTimeout(async function() {
         main(channel);
       }, b);
     } else if (randomInteger(0, 1700) == 1250) {
-      !config["dontLogUselessThings"] &&
-        console.log(
-          "\x1b[35m",
-          "Sleeping for " + c / 1000 / 60 + " minutes."
-        );
-      !config["dontLogUselessThings"] &&
-        hook.send("Sleeping for " + c / 1000 / 60 + " minutes.");
-
+      !config["dontLogUselessThings"] && console.log("\x1b[35m", "Sleeping for " + c / 1000 / 60 + " minutes.");
+      !config["dontLogUselessThings"] && hook.send("Sleeping for " + c / 1000 / 60 + " minutes.");
       setTimeout(async function() {
         main(channel);
       }, c);
@@ -873,44 +487,38 @@ async function autoUsePizza(message, client) {
     }
   }
 }
-
 //-------------------------- Utils functions --------------------------\\
 function random(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
-
 async function randomCommand(client, channel, commandsUsed) {
   if (config.transferOnlyMode) return;
   let command = config.commands[random(0, config.commands.length - 1)];
   if (commandsUsed.includes(command)) return;
-  !config["dontLogUselessThings"] &&
-    console.log("\x1b[0m", client.user.tag + " - Using command " + command);
+  !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - Using command " + command);
   commandsUsed.push(command);
-
   ongoingCommand = true;
   await channel.sendSlash(botid, command);
   handleCommand(commandsUsed, command, 53000);
 }
+
 function removeAllInstances(arr, item) {
   for (var i = arr.length; i--;) {
     if (arr[i] === item) arr.splice(i, 1);
   }
 }
-
 async function handleCommand(commandsUsed, command, delay) {
   ongoingCommand = false;
   setTimeout(() => {
     removeAllInstances(commandsUsed, command);
   }, delay);
 }
-
 async function handleSearch(message) {
   const components = message.components[0]?.components;
   const len = components?.length;
   if (!len) return;
   for (var a = 0; a < 3; a++) {
     let btn = components[a];
-
     if (config.searchLocations?.includes(btn?.label.toLowerCase())) {
       clickButton(message, btn);
     } else {
@@ -920,15 +528,13 @@ async function handleSearch(message) {
 }
 async function clickRandomButton(message, rows) {
   setTimeout(async () => {
-    const components =
-      message.components[randomInteger(0, rows)]?.components;
+    const components = message.components[randomInteger(0, rows)]?.components;
     const len = components?.length;
     if (!len) return;
     let btn = components[Math.floor(Math.random() * len)];
     return clickButton(message, btn);
   }, randomInteger(config.cooldowns.buttonClick.minDelay, config.cooldowns.buttonClick.maxDelay));
 }
-
 async function highLowRandom(message, number) {
   setTimeout(async () => {
     const components = message.components[0]?.components;
@@ -938,7 +544,6 @@ async function highLowRandom(message, number) {
     return clickButton(message, btn);
   }, randomInteger(config.cooldowns.buttonClick.minDelay, config.cooldowns.buttonClick.maxDelay));
 }
-
 async function transfer(message, number, row = 1) {
   setTimeout(async () => {
     const components = message.components[row]?.components;
@@ -948,16 +553,13 @@ async function transfer(message, number, row = 1) {
     return clickButton(message, btn);
   }, randomInteger(config.cooldowns.buttonClick.minDelay, config.cooldowns.buttonClick.maxDelay));
 }
-
 async function selectTriviaAnswers(message, ans) {
   setTimeout(async () => {
     var flag = false;
-
     const components = message.components[0]?.components;
     const len = components?.length;
     let btn;
     if (len == NaN) return;
-
     for (var i = 0; i < components.length; i++) {
       if (components[i].label.includes(ans)) {
         btn = components[i];
@@ -978,22 +580,15 @@ function randomInteger(min, max) {
   }
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 async function inv(botid, channel) {
   await channel.sendSlash(botid, "inventory");
 }
-
 async function autoToolBuyer(message, client, acc_bal, acc_bank) {
   if (config.autoBuy) {
     if (message.flags.has("EPHEMERAL") && message.embeds[0].description) {
       if (message.embeds[0].description?.includes("You don't have a ")) {
         const item = ["Fishing  Pole", "Hunting Rifle", "Shovel"].find(
-          (e) =>
-            message.embeds[0]?.description?.includes(
-              `don't have a ${e.toLowerCase()}`
-            )
-        );
-
+          (e) => message.embeds[0]?.description?.includes(`don't have a ${e.toLowerCase()}`));
         if (!item) {
           return;
         }
@@ -1001,78 +596,36 @@ async function autoToolBuyer(message, client, acc_bal, acc_bank) {
           await message.channel.sendSlash(botid, "withdraw", "25000");
           setTimeout(async () => {
             await message.channel.sendSlash(botid, "shop buy", item, "1");
-
-          }
-            , randomInteger(3000, 5000));
+          }, randomInteger(3000, 5000));
         } else {
           await message.channel.sendSlash(botid, "shop buy", item, "1");
-
         }
-
-
-
-				/*!*/ config["dontLogUselessThings"] &&
-          hook.send(
-            new MessageBuilder()
-              .setTitle("Bought Tool: " + item)
-              .setURL(message.url)
-              .setDescription(
-                client.user.username +
-                ": Succesfully bought a new " +
-                item.toLowerCase()
-              )
-              .setColor("#2e3236")
-          );
+        /*!*/
+        config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought Tool: " + item).setURL(message.url).setDescription(client.user.username + ": Succesfully bought a new " + item.toLowerCase()).setColor("#2e3236"));
       }
     }
   }
 }
-
-
-
-
-
 async function autoBuyItem(message, client, acc_bal, acc_bank) {
   // if command not send by user then return
   if (message.interaction?.user !== client.user) return;
   let description = message.embeds[0]?.description;
-  if (
-    !Object.keys(config.autoBuyItems).some((item) =>
-      message.embeds[0]?.title?.includes(item)
-    ) ||
-    !description?.includes("own")
-  )
-    return;
+  if (!Object.keys(config.autoBuyItems).some((item) => message.embeds[0]?.title?.includes(item)) || !description?.includes("own")) return;
   const total_own = description.match(/own \*\*(\d+)/)[1];
   if (!total_own) return;
-  let item = Object.keys(config.autoBuyItems).find((item) =>
-    message.embeds[0]?.title?.includes(item)
-  );
-
+  let item = Object.keys(config.autoBuyItems).find((item) => message.embeds[0]?.title?.includes(item));
   if (config.autoBuyItems[item]["50/50"] && randomInteger(0, 1) === 0) return;
-
   let to_buy = config.autoBuyItems[item]["minimum"] - Number(total_own);
   if (to_buy <= 0) return;
   let pricePerItem = config.autoBuyItems[item]["pricePerItem"];
   if (acc_bal <= (to_buy * pricePerItem) && acc_bank >= (to_buy * pricePerItem)) {
-    await message.channel.sendSlash(
-      botid,
-      "withdraw",
-      (to_buy * pricePerItem).toString()
-    );
+    await message.channel.sendSlash(botid, "withdraw",
+      (to_buy * pricePerItem).toString());
   }
-
-
   setTimeout(async () => {
-    await message.channel.sendSlash(
-      botid,
-      "shop buy",
-      item,
-      to_buy.toString()
-    );
+    await message.channel.sendSlash(botid, "shop buy", item, to_buy.toString());
   }, randomInteger(2000, 4000));
 }
-
 async function clickButton(message, btn, once = true) {
   if (once) {
     try {
@@ -1083,16 +636,14 @@ async function clickButton(message, btn, once = true) {
     }
   }
   // INFO: try until success
-  let interval = setInterval(
-    async () => {
+  let interval = setInterval(async () => {
       try {
         await message.clickButton(btn.customId);
         clearInterval(interval);
-      } catch (err) { }
+      } catch (err) {}
     },
     config.cooldowns.buttonClick.minDelay,
-    config.cooldowns.buttonClick.maxDelay
-  );
+    config.cooldowns.buttonClick.maxDelay);
 }
 async function playBossGame(message) {
   const btn = message.components[0]?.components[0];
@@ -1101,24 +652,15 @@ async function playBossGame(message) {
     clickButton(message, btn);
   }, randomInteger(config.cooldowns.buttonClick.minDelay, config.cooldowns.buttonClick.maxDelay));
 }
-
 async function playFGame(message, channel) {
   if (message.channel.id === channel) {
     if (message.embeds[0] && message.embeds[0].description?.includes("F")) {
       const btn = message.components[0]?.components[0];
       if (btn?.label === "F") {
         clickButton(message, btn);
-      } else if (
-        message.embeds[0]?.description?.includes(
-          "Attack the boss by clicking"
-        )
-      ) {
+      } else if (message.embeds[0]?.description?.includes("Attack the boss by clicking")) {
         playBossGame(message);
-      } else if (
-        message.embeds[0]?.description?.includes(
-          "They can't hear us"
-        )
-      ) {
+      } else if (message.embeds[0]?.description?.includes("They can't hear us")) {
         playBossGame(message);
       }
     }
@@ -1127,117 +669,68 @@ async function playFGame(message, channel) {
 async function postMeme(message) {
   const PlatformMenu = message.components[0].components[0];
   const MemeTypeMenu = message.components[1].components[0];
-
   // options
   const Platforms = PlatformMenu.options.map((opt) => opt.value);
   const MemeTypes = MemeTypeMenu.options.map((opt) => opt.value);
-
   // selected option
   const Platform = Platforms[Math.floor(Math.random() * Platforms.length)];
   const MemeType = MemeTypes[Math.floor(Math.random() * MemeTypes.length)];
-
-  setTimeout(
-    async () => {
+  setTimeout(async () => {
       await message.selectMenu(PlatformMenu.customId, [Platform]);
     },
     config.cooldowns.buttonClick.minDelay,
-    config.cooldowns.buttonClick.maxDelay
-  );
-
-  setTimeout(
-    async () => {
+    config.cooldowns.buttonClick.maxDelay);
+  setTimeout(async () => {
       await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
     },
     config.cooldowns.buttonClick.minDelay * 1.2,
-    config.cooldowns.buttonClick.maxDelay
-  );
-
+    config.cooldowns.buttonClick.maxDelay);
   const btn = message.components[2]?.components[0];
   // console.log(btn.disabled)
   // INFO: try until success
   // setTimeout(
   //   async () => {
-
-  setTimeout(
-    async () => {
+  setTimeout(async () => {
       if (!btn.disabled) {
         await clickButton(message, btn, false);
       } else {
-        setTimeout(
-          async () => {
+        setTimeout(async () => {
             await clickButton(message, btn, false);
           },
           1000,
-          2000
-        );
+          2000);
       }
     },
     2000,
-    3000
-  );
-
+    3000);
   // },
   //    1000,
   //    2000
   //  );
 }
-
 async function handleInventoryCommand(client, token, channel, message) {
   await message.channel.sendSlash(botid, "inventory")
   setTimeout(async () => {
-    var [name, quantity] = message.embeds[0]?.description
-      ?.split("\n")[0]
-      .split("** ─ ");
+    var [name, quantity] = message.embeds[0]?.description?.split("\n")[0].split("** ─ ");
     name = name?.split("**")[1];
-
     console.log(chalk.blue(client.user.tag + " " + name + ": " + quantity));
     isInventoryEmpty = name != undefined;
     // INFO: if serverEventsDonateMode enabled
     if (config.serverEventsDonateMode) {
-      await message.channel.sendSlash(
-        botid,
-        "serverevents donate",
-        quantity,
-        name
-      );
+      await message.channel.sendSlash(botid, "serverevents donate", quantity, name);
     }
     // INFO: when autoGift is enabled and user is not main account
     else if (config.autoGift && token != config.mainAccount) {
       // Command preview : /market post for_coins type:sell quantity:1 item:Ant for_coins:1 days:1 allow_partial:False private:
-      
-      await channel.sendSlash(
-        botid,
-        "friends share items",
-        client1.user.id,
-        quantity,
-        name
-        
-      );
-
-      console.log(
-        chalk.blue(
-          client.user.tag +
-          " Shared " +
-          quantity +
-          " " +
-          name +
-          " to main account. "
-        )
-      );
+      await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
+      console.log(chalk.blue(client.user.tag + " Shared " + quantity + " " + name + " to main account. "));
     }
   }, randomInteger(300, 700));
 }
-
-
-
 async function handleCaptcha(message) {
   // INFO: Match image captcha
-  if (
-    message.embeds[0]?.title?.toLowerCase().includes("captcha") &&
-    message.embeds[0].description?.toLowerCase().includes("matching image")
-  ) {
+  if (message.embeds[0]?.title?.toLowerCase().includes("captcha") && message.embeds[0].description?.toLowerCase().includes("matching image")) {
     console.log(chalk.red("Captcha!"));
-
     // var captcha = message.embeds[0].image.url;
     //get embed thubmnail
     var captcha = message.embeds[0].image.url;
@@ -1248,7 +741,6 @@ async function handleCaptcha(message) {
       var buttomEmoji = components[a].emoji.id;
       console.log("buttonEMoji" + buttomEmoji);
       hook.send(buttomEmoji);
-
       if (captcha.includes(buttomEmoji)) {
         console.log(components[a].customId);
         clickButton(message, components[a]);
@@ -1257,23 +749,9 @@ async function handleCaptcha(message) {
       }
     }
   }
-
   // INFO: All pepe find captcha
-  if (
-    message.embeds[0]?.title?.toLowerCase().includes("captcha") &&
-    message.embeds[0].description?.toLowerCase().includes("pepe")
-  ) {
-    var pepe = [
-      "819014822867894304",
-      "796765883120353280",
-      "860602697942040596",
-      "860602923665588284",
-      "860603013063507998",
-      "936007340736536626",
-      "933194488241864704",
-      "680105017532743700",
-    ];
-
+  if (message.embeds[0]?.title?.toLowerCase().includes("captcha") && message.embeds[0].description?.toLowerCase().includes("pepe")) {
+    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700", ];
     for (var i = 0; i <= 3; i++) {
       const components = message.components[i]?.components;
       for (var a = 0; a <= 2; a++) {
@@ -1288,28 +766,17 @@ async function handleCaptcha(message) {
     }
   }
 }
-
 async function playMiniGames(message, edited = false) {
-  let description = message.embeds[0]?.description?.replace(
-    /<a?(:[^:]*:)\d+>/g,
-    "$1"
-  ); // format emoji <:id:severId> to :id:
-  let positions = description
-    ?.split("\n")
-    .slice(1) //remove first line
+  let description = message.embeds[0]?.description?.replace(/<a?(:[^:]*:)\d+>/g, "$1"); // format emoji <:id:severId> to :id:
+  let positions = description?.split("\n").slice(1) //remove first line
     .map((e) => e.split(":").filter((e) => e !== "")); // split by : and remove blank string
-
   // INFO: Dodge the Fireball!
   if (description?.includes("Dodge the Fireball!")) {
     let fireballPosition = positions[1].length - 1; // 1 is fireball line and length-1 will be postion where fireball is
     let safePosition = ["Left", "Middle", "Right"].filter(
-      (e, idx) => idx !== fireballPosition
-    );
-
+      (e, idx) => idx !== fireballPosition);
     let buttons = message.components[0]?.components;
-    let btn = buttons.filter((e) => safePosition.includes(e.label))[
-      randomInteger(0, 1)
-    ]; // filter and remove unsafe position button and select random from 0 or 1 (total 3 button 1 is unsafe other is safe so)
+    let btn = buttons.filter((e) => safePosition.includes(e.label))[randomInteger(0, 1)]; // filter and remove unsafe position button and select random from 0 or 1 (total 3 button 1 is unsafe other is safe so)
     await clickButton(message, btn, true);
   } else if (description?.includes("Catch the fish!")) {
     let fishPosition = positions[0].length - 1; // here 0 because 2nd line was fish not a dragon like has in dodge fireball
@@ -1318,12 +785,9 @@ async function playMiniGames(message, edited = false) {
   } else if (description?.includes("Hit the ball!")) {
     let ballPosition = positions[1].length - 1; // ball kick pos
     let kickPosition = ["Left", "Middle", "Right"].filter(
-      (e, idx) => idx !== ballPosition
-    );
+      (e, idx) => idx !== ballPosition);
     let buttons = message.components[0]?.components;
-    let btn = buttons.filter((e) => kickPosition.includes(e.label))[
-      randomInteger(0, 1)
-    ]; //filter, remove non kickable pos
+    let btn = buttons.filter((e) => kickPosition.includes(e.label))[randomInteger(0, 1)]; //filter, remove non kickable pos
     await clickButton(message, btn, true);
   } else if (description?.includes("Dunk the ball!")) {
     let basketballPosition = positions[0].length - 1;
@@ -1331,7 +795,6 @@ async function playMiniGames(message, edited = false) {
     await clickButton(message, btn, true);
   }
 }
-
 async function GiveawayEnter(message, channel) {
   if (message.channel.id === channel) {
     if (message.embeds[0].description?.includes("Giveaway")) {
