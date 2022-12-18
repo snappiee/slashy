@@ -1,5 +1,5 @@
-var version = "1.8.51";
-// Version 1.8.41
+var version = "1.8.54";
+// Version 1.8.54
 const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
@@ -23,7 +23,7 @@ axios.get("https://raw.githubusercontent.com/TahaGorme/slashy/main/index.js").th
   console.log(error);
 });
 process.on("unhandledRejection", (reason, p) => {
-  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND", ];
+  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND",];
   if (ignoreErrors.includes(reason.code || reason.message)) return;
   console.log(" [Anti Crash] >>  Unhandled Rejection/Catch");
   console.log(reason, p);
@@ -45,7 +45,6 @@ const botid = "270904126974590976";
 var bank = 0;
 var wallet = 0;
 var net = 0;
-var rank = 0;
 // const config = require("./config.json");
 // INFO: Load batch token file if enabled
 if (config.isBatchTokenFile) {
@@ -75,7 +74,6 @@ app.get("/api", async (req, res) => {
     bank: bank,
     wallet: wallet,
     net: net,
-    rank: rank,
   });
 });
 app.listen(7500);
@@ -96,18 +94,7 @@ client1.on("ready", async () => {
   hook.send(new MessageBuilder().setTitle("Started Slashy").setURL("https://github.com/TahaGorme/Slashy").setDescription("Started grinding on " + config.tokens.length + " accounts.").setColor("#2e3236")
     //.setTimestamp()
   );
-  
-});
-// INFO: register main account events
-client1.on("messageCreate", async (message) => {
-  // INFO: when we send "/market post" and receive responsed
-  if (config.autoGift && randomInteger(1, 100) == 60) {
-    handleInventoryCommand(message.channel.id, message);
-  }
-  // INFO: Play Minigame
-  // INFO: Register captcha
-  handleCaptcha(message);
-  const channel1 = client1.channels.cache.get(config.mainId.channel);
+  // autoBuyLife(channel1);
 });
 client1.login(config.mainAccount);
 start();
@@ -122,6 +109,8 @@ async function doEverything(token, Client, client1, channelId) {
   var channel;
   var acc_bal = 0;
   var acc_bank = 0;
+  var isBotFree = true;
+  var ongoingCmd = false;
   const client = new Client({
     checkUpdate: false,
     readyStatus: false
@@ -143,20 +132,33 @@ async function doEverything(token, Client, client1, channelId) {
   }
   client.on("ready", async () => {
     client.user.setStatus("invisible");
+    // 		console.log(
+    // 			chalk.yellow(
+    // 				figlet.textSync("Slashy", { horizontalLayout: "full" })
+    // 			)
+    // 		);
     console.log(chalk.green(`Logged in as ${chalk.cyanBright(client.user.tag)}`));
     channel = client.channels.cache.get(channelId);
     if (!channel) return console.log(chalk.red("Channel not found! " + channelId));
     // console.log(chalk.magenta("Playing Dank Memer in " + channel.name));
-    !config["dontLogUselessThings"] && hook.send("Started. Playing Dank Memer in <#" + channel.id + ">");
+    // !config["dontLogUselessThings"] &&
+    // hook.send("Started. Playing Dank Memer in <#" + channel.id + ">");
     if (config.transferOnlyMode || config.serverEventsDonateMode) {
       console.log(chalk.red("Transfer Only Mode or Server Events Donate is enabled."));
       inv(botid, channel);
       return;
     }
-    await channel.sendSlash(botid, "use", "apple");
+    await channel.sendSlash(botid, "balance");
     await channel.sendSlash(botid, "daily");
-    await channel.sendSlash(botid, "item", "horseshoe");
-    await channel.sendSlash(botid, "item", "pizza");
+    setTimeout(async () => {
+      if (config.autoBuyItems.includes("Life Saver")) await channel.sendSlash(botid, "item", "Life Saver");
+    }, randomInteger(1000, 3000));
+    main(channel);
+    config.autoUse.forEach((item) => {
+      setTimeout(async () => {
+        await channel.sendSlash(botid, "use", item);
+      }, randomInteger(3000, 6000));
+    });
   });
   client.on("messageUpdate", async (oldMessage, newMessage) => {
     if (newMessage.interaction?.user !== client.user) return;
@@ -164,14 +166,14 @@ async function doEverything(token, Client, client1, channelId) {
     playMiniGames(newMessage, true);
     playFGame(newMessage, channelId);
     // INFO: Caught :
-    let isCaught = newMessage.embeds[0]?.description?.match(/(Dragon|Kraken|Legendary Fish|Mole Man|Zig's Capybara), nice (shot|catch)!/); //null or Array eg. ["Dragon, nice shot!","Dragon","shot"] => [whole match,group1,group2]
+    let isCaught = newMessage.embeds[0]?.description?.match(/(Dragon|Kraken|Legendary Fish), nice (shot|catch)!/); //null or Array eg. ["Dragon, nice shot!","Dragon","shot"] => [whole match,group1,group2]
     if (isCaught) {
       let [_, item, action] = isCaught; //yeah dragon, fish and kraken are item in dank memer
       // action : shot or catch
       hook.send(new MessageBuilder().setTitle("Minigame Boss: " + item).setURL(newMessage.url).setDescription(client.user.username + " just caught a **" + item + "**!").setColor("#2e3236").setTimestamp());
     }
     // INFO: confirm donate
-    if (newMessage.embeds[0]?.title?.includes("Action Confirmed") && newMessage.embeds[0].description?.includes("Are you sure you want to donate your items?")) {
+    if (newMessage.embeds[0]?.title?.includes("Action Confirmed") && newMessage.embeds[0].description?.includes("Are you sure you want to donate your items?") && newMessage.interaction?.user == client.user) {
       setTimeout(async () => {
         if (isInventoryEmpty) {
           if (isServerPoolEmpty) return;
@@ -182,8 +184,75 @@ async function doEverything(token, Client, client1, channelId) {
       }, randomInteger(config.cooldowns.serverEvents.minDelay, config.cooldowns.serverEvents.maxDelay));
     }
     // INFO: when posted memes is dead meme ( /postmemes )
+    if (newMessage.embeds[0]?.description?.includes("dead meme")) {
+      commandsUsed.push("postmemes");
+      setTimeout(() => {
+        removeAllInstances(commandsUsed, "postmemes");
+      }, 5.01 * 1000 * 60);
+    }
   });
   client.on("messageCreate", async (message) => {
+    if (!message?.embeds[0]?.description?.includes("986396363707281468") && config.autoBuyItems.includes("Lucky Horseshoe") && randomInteger(1, 3) == 2) {
+      if (message?.embeds[0]?.description?.includes("You cast out your line and brought back") || message?.embeds[0]?.description?.includes("You went hunting and brought back") || message?.embeds[0]?.description?.includes("You dig in the dirt and brought")) {
+        if (acc_bal >= 75000) {
+          await channel.sendSlash(botid, "shop buy", "Lucky Horseshoe");
+          !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Lucky Horseshoe! ").setColor("#2e3236"));
+        } else if (acc_bank >= 75000 && acc_bal < 75000) {
+          await channel.sendSlash(botid, "withdraw", "75000");
+          setTimeout(async () => {
+            await channel.sendSlash(botid, "shop buy", "Lucky Horseshoe");
+            !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Lucky Horseshoe! ").setColor("#2e3236"));
+            setTimeout(async () => {
+              await channel.sendSlash(botid, "use", "Lucky Horseshoe");
+              !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Lucky Horseshoe! ").setColor("#2e3236"));
+            }, randomInteger(3000, 5000));
+          }, randomInteger(2000, 2500));
+        }
+      }
+    }
+    // You don't own a single Lucky Horseshoe, therefore cannot use it.
+    if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Lucky Horseshoe") && message?.embeds[0]?.description?.includes("Lucky Horseshoe expired!")) {
+      await channel.sendSlash(botid, "use", "Lucky Horseshoe");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Lucky Horseshoe! ").setColor("#2e3236"));
+    }
+    if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Apple") && message?.embeds[0]?.description?.includes("Apple expired!")) {
+      await channel.sendSlash(botid, "use", "Apple");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
+    }
+    if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Pizza") && message?.embeds[0]?.description?.includes("Pizza expired!")) {
+      await channel.sendSlash(botid, "use", "Pizza");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Pizza").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Pizza! ").setColor("#2e3236"));
+    }
+    // Your lifesaver protected you!
+    if (!message?.guild && message?.author?.id == botid && message?.embeds[0]?.title?.includes("Your lifesaver protected you") && config.autoBuyItems.includes("Life Saver")) {
+      // await channel.sendSlash(botid, "use", "Apple");
+      if (acc_bal >= 100000) {
+        await channel.sendSlash(botid, "shop buy", "Life Saver");
+        !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought a Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver! ").setColor("#2e3236"));
+      } else if (acc_bank >= 100000 && acc_bal < 100000) {
+        await channel.sendSlash(botid, "withdraw", "100000");
+        setTimeout(async () => {
+          await channel.sendSlash(botid, "shop buy", "Life Saver");
+          !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought a Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver! ").setColor("#2e3236"));
+        }, randomInteger(2000, 2500));
+      }
+    }
+    if (message.interaction?.user == client.user && message?.embeds[0]?.description?.includes("You don't own a single Lucky Horseshoe, therefore cannot use it.") && config.autoBuyItems.includes("Lucky Horseshoe") && config.autoUse.includes("Lucky Horseshoe")) {
+      if (acc_bal >= 75000) {
+        await channel.sendSlash(botid, "shop buy", "Lucky Horseshoe");
+        !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Lucky Horseshoe! ").setColor("#2e3236"));
+      } else if (acc_bank >= 75000 && acc_bal < 75000) {
+        await channel.sendSlash(botid, "withdraw", "75000");
+        setTimeout(async () => {
+          await channel.sendSlash(botid, "shop buy", "Lucky Horseshoe");
+          !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Lucky Horseshoe! ").setColor("#2e3236"));
+          setTimeout(async () => {
+            await channel.sendSlash(botid, "use", "Lucky Horseshoe");
+            !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Lucky Horseshoe! ").setColor("#2e3236"));
+          }, randomInteger(3000, 5000));
+        }, randomInteger(2000, 2500));
+      }
+    }
     // INFO: read alerts
     if (message.embeds[0]?.title?.includes("You have an unread alert!") && message.content?.includes(client.user.id)) {
       await channel.sendSlash(botid, "alert");
@@ -216,23 +285,27 @@ async function doEverything(token, Client, client1, channelId) {
       } else {
         setTimeout(async () => {
           // await message.channel.sendSlash(botid, "inventory")
-          if (config.serverEventsDonatePayout) await message.channel.sendSlash(botid, "serverevents pool");
+          if (config.serverEventsDonatePayout) await channel.sendSlash(botid, "serverevents pool");
         }, randomInteger(config.cooldowns.serverEvents.minDelay, config.cooldowns.serverEvents.maxDelay));
       }
     }
     if (message.interaction?.user !== client.user || message.author.id !== botid || !channel) return;
-    autoBuyItem(message, client, acc_bal, acc_bank);
+    // autoBuyItem(message, client, acc_bal, acc_bank);
     autoToolBuyer(message, client, acc_bal, acc_bank);
-    autoUseHorse(message, client);
-    autoUsePizza(message, client);
+    autoBuyLife(message, client, acc_bal, acc_bank);
+    // autoUseHorse(message, client);
     if (message.author.id !== botid || message.channel.id !== channel.id) return;
-    // console.log(message.embeds[0])
-    // // if (message.mentions.has(client.user.id)) {
-    // if (message.embeds[0] && message.embeds[0].title && message.embeds[0].title.includes(client.user.username + "'s Meme Posting Session") && message.embeds[0].description) {
-    //     //to be added later
     // }
     playMiniGames(message);
     playFGame(message, channel.id);
+    if (message?.flags?.has("EPHEMERAL") && message?.embeds[0]?.description?.includes("You have an ongoing command running.")) {
+      ongoingCmd = true;
+      isBotFree = false;
+      setTimeout(async () => {
+        isBotFree = true;
+        ongoingCmd = false;
+      }, randomInteger(config.cooldowns.commandInterval.minDelay * 1.5, config.cooldowns.commandInterval.maxDelay * 1.5));
+    }
     if (commandsUsed.includes("postmemes") && message.embeds[0]?.description?.includes("Pick a meme type and a platform to post a meme on!")) {
       postMeme(message);
     }
@@ -255,6 +328,12 @@ async function doEverything(token, Client, client1, channelId) {
         }
         // return;
       }
+    }
+    if (message.embeds[0]?.author?.name.includes(client.user.username + "'s Scratch-Off")) {
+      // await new Promise(resolve => setTimeout(resolve, randomInteger(config.cooldowns.buttonClick.minDelay, config.cooldowns.buttonClick.maxDelay)));
+      await clickRandomButtonScratch(message, 4, false)
+      await clickRandomButtonScratch(message, 4, false)
+      await clickRandomButtonScratch(message, 4, false)
     }
     // INFO: when current account inventory is displayed
     if (message.embeds[0]?.author?.name.includes(client.user.username + "'s inventory")) {
@@ -279,14 +358,7 @@ async function doEverything(token, Client, client1, channelId) {
         await message.channel.sendSlash(botid, "serverevents payout", main_accId, quantity, name);
       }, randomInteger(config.cooldowns.serverEvents.minDelay, config.cooldowns.serverEvents.maxDelay));
     }
-    if (config.autoGift && token != config.mainAccount && message.embeds[0]?.description?.includes("To post this offer, you will pay a fee")) {
-      transfer(message, 1);
-    }
-    if (message.embeds[0]?.title === "Pending Confirmation") {
-      highLowRandom(message, 1);
-      // console.log(chalk.yellow("Sold all sellable items."))
-    }
-    // INFO: Register captchal
+    // INFO: Register captcha
     handleCaptcha(message);
     // INFO: Return if transferOnlyMode is enabled
     if (config.transferOnlyMode) return;
@@ -306,6 +378,7 @@ async function doEverything(token, Client, client1, channelId) {
     if (commandsUsed.includes("crime") && message.embeds[0]?.description?.includes("What crime do you want to commit?")) {
       clickRandomButton(message, 0);
     }
+    // INFO: Handle Giveaway Command
     if (commandsUsed.includes("giveaway view") && message.embeds[0]?.description?.includes("Author")) {
       GiveawayEnter(message, 0);
     }
@@ -317,11 +390,11 @@ async function doEverything(token, Client, client1, channelId) {
       if (answer) selectTriviaAnswers(message, answer);
       else {
         clickRandomButton(message, 0);
-        console.log("Unknown trivia")
+        !config["dontLogUselessThings"] && console.log("Unknown trivia found");
       }
     }
     // INFO: Handle HighLow Command
-    if (commandsUsed.includes("highlow") && message.embeds[0]?.description?.includes("I just chose a secret number between 1 and 100.")) {
+    if (message.embeds[0]?.description?.includes("I just chose a secret number between 1 and 100.")) {
       var c = parseInt(message.embeds[0].description.split(" **")[1].replace("**?", "").trim());
       highLowRandom(message, c > 50 ? 0 : 2);
     }
@@ -330,50 +403,51 @@ async function doEverything(token, Client, client1, channelId) {
       if (message.embeds[0].fields[1].name !== "Live Since") {
         const components = message.components[0]?.components;
         if (components[0].type !== "SELECT_MENU" && components[0].label.includes("Go Live")) {
+          // console.log("CLICKING BUTAN")
           await message.clickButton(components[0].customId);
           setTimeout(async () => {
-              if (message.components[0].components[0].type == "SELECT_MENU") {
-                const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft", ];
-                const Game = Games[Math.floor(Math.random() * Games.length)];
-                const GamesMenu = message.components[0].components[0].customId;
-                await message.selectMenu(GamesMenu, [Game]);
-              } else {
-                return;
-              }
+            if (message.components[0].components[0].type == "SELECT_MENU") {
+              const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft",];
+              const Game = Games[Math.floor(Math.random() * Games.length)];
+              const GamesMenu = message.components[0].components[0].customId;
+              await message.selectMenu(GamesMenu, [Game]);
+            } else {
+              return;
+            }
+            setTimeout(async () => {
+              const components2 = message.components[1]?.components;
               setTimeout(async () => {
-                  const components2 = message.components[1]?.components;
-                  setTimeout(async () => {
-                      if (components2[0]) {
-                        await message.clickButton(components2[0].customId);
-                      } else {
-                        await message.clickButton(components2[0].customId);
-                      }
-                    },
-                    1000,
-                    1600);
-                },
-                config.cooldowns.buttonClick.minDelay,
-                config.cooldowns.buttonClick.maxDelay);
-              setTimeout(async () => {
-                  const check = randomInteger(0, 6);
-                  if (check == 0 || check == 1) {
-                    await message.clickButton(message.components[0]?.components[0].customId);
-                  } else if (check == 2 || check == 3 || check == 4 || check == 5) {
-                    await message.clickButton(message.components[0]?.components[1]?.customId);
-                  } else if (check == 6) {
-                    await message.clickButton(message.components[0]?.components[2].customId);
-                  }
-                },
-                config.cooldowns.buttonClick.minDelay,
-                config.cooldowns.buttonClick.maxDelay);
+                if (components2[0]) {
+                  await message.clickButton(components2[0].customId, false);
+                } else {
+                  await message.clickButton(components2[0].customId, false);
+                }
+              },
+                1000,
+                1600);
             },
+              config.cooldowns.buttonClick.minDelay,
+              config.cooldowns.buttonClick.maxDelay);
+            setTimeout(async () => {
+              const check = randomInteger(0, 6);
+              if (check == 0 || check == 1) {
+                await message.clickButton(message.components[0]?.components[0].customId);
+              } else if (check == 2 || check == 3 || check == 4 || check == 5) {
+                await message.clickButton(message.components[0]?.components[1]?.customId);
+              } else if (check == 6) {
+                await message.clickButton(message.components[0]?.components[2].customId);
+              }
+            },
+              config.cooldowns.buttonClick.minDelay,
+              config.cooldowns.buttonClick.maxDelay);
+          },
             config.cooldowns.buttonClick.minDelay,
             config.cooldowns.buttonClick.maxDelay * 1.5);
         }
       } else if (message.embeds[0].fields[1].name == "Live Since") {
         const check = randomInteger(0, 6);
         if (check == 0 || check == 1) {
-          await message.clickButton(message.components[0]?.components[0].customId);
+          await clickButton(message, message.components[0]?.components[0].customId);
         } else if (check == 2 || check == 3 || check == 4 || check == 5) {
           await message.clickButton(message.components[0]?.components[1].customId);
         } else if (check == 6) {
@@ -383,53 +457,13 @@ async function doEverything(token, Client, client1, channelId) {
     }
   });
   client.login(token);
-  async function autoUseHorse(message, client) {
-    if (message.interaction?.user !== client.user) return;
-    let description = message.embeds[0]?.description;
-    if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
-      setTimeout(async () => {
-        await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
-      }, randomInteger(300000, 400000));
-    } else {
-      if (!message.embeds[0]?.title?.includes("Lucky Horseshoe") || !description?.includes("own") || !config.autoUse.includes("Lucky Horseshoe")) return;
-      const total_own = description.match(/own \*\*(\d+)/)[1];
-      if (!total_own) return;
-      if (Number(total_own) > 0) {
-        await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
-        !config["dontLogUselessThings"] && console.log(chalk.green("Succesfully used a Lucky Horseshoe"));
-      }
-      setTimeout(async () => {
-        await message.channel.sendSlash(botid, "item", "Lucky Horseshoe");
-      }, randomInteger(700000, 800000));
-    }
-  }
-  async function autoUsePizza(message, client) {
-    if (message.interaction?.user !== client.user) return;
-    let description = message.embeds[0]?.description;
-    if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
-      setTimeout(async () => {
-        await message.channel.sendSlash(botid, "use", "Pizza");
-      }, randomInteger(1000000, 2000000));
-    } else {
-      if (!message.embeds[0]?.title?.includes("Pizza") || !description?.includes("own") || !config.autoUse.includes("Pizza")) return;
-      const total_own = description.match(/own \*\*(\d+)/)[1];
-      if (!total_own) return;
-      if (Number(total_own) > 0) {
-        await message.channel.sendSlash(botid, "use", "Pizza");
-        !config["dontLogUselessThings"] && console.log(chalk.green("Succesfully used a Pizza"));
-      }
-      setTimeout(async () => {
-        await message.channel.sendSlash(botid, "item", "Pizza");
-      }, randomInteger(3000000, 4000000));
-    }
-  }
   async function main(channel) {
     var a = randomInteger(config.cooldowns.commandInterval.minDelay, config.cooldowns.commandInterval.maxDelay);
     var b = randomInteger(config.cooldowns.shortBreak.minDelay, config.cooldowns.shortBreak.maxDelay);
     var c = randomInteger(config.cooldowns.longBreak.minDelay, config.cooldowns.longBreak.maxDelay);
-    randomCommand(client, channel, commandsUsed);
+    randomCommand(client, channel, commandsUsed, true, ongoingCmd);
     // INFO: Deposit money
-    if (config.autoDeposit && randomInteger(0, 40) === 2) {
+    if (config.autoDeposit && randomInteger(0, 100) === 2) {
       await channel.sendSlash(botid, "deposit", "max");
       !config["dontLogUselessThings"] && console.log(chalk.yellow("Deposited all coins in the bank."));
       setTimeout(async () => {
@@ -443,25 +477,17 @@ async function doEverything(token, Client, client1, channelId) {
     if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
       await channel.sendSlash(botid, "balance");
     }
-    // setInterval(async () => {
-    if (!config.transferOnlyMode && config.autoBuy && randomInteger(0, 300) === 3) {
-      Object.keys(config.autoBuyItems).forEach((item) => {
-        setTimeout(async () => {
-          await channel.sendSlash(botid, "item", item);
-        }, randomInteger(390000, 500000));
-      });
-    }
     if (config.autoSell && token != config.mainAccount && randomInteger(0, 4) === 100) {
       await channel.sendSlash(botid, "sell all");
     }
     // INFO: Logic of taking break
-    if (randomInteger(0, 130) == 50) {
+    if (randomInteger(0, 190) == 50) {
       !config["dontLogUselessThings"] && console.log("\x1b[34m", "Taking a break for " + b / 1000 + " seconds.");
       !config["dontLogUselessThings"] && hook.send("Taking a break for " + b / 1000 + " seconds.");
       setTimeout(async function() {
         main(channel);
       }, b);
-    } else if (randomInteger(0, 800) == 400) {
+    } else if (randomInteger(0, 900) == 400) {
       !config["dontLogUselessThings"] && console.log("\x1b[35m", "Sleeping for " + c / 1000 / 60 + " minutes.");
       !config["dontLogUselessThings"] && hook.send("Sleeping for " + c / 1000 / 60 + " minutes.");
       setTimeout(async function() {
@@ -478,15 +504,29 @@ async function doEverything(token, Client, client1, channelId) {
 function random(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
-async function randomCommand(client, channel, commandsUsed) {
+async function randomCommand(client, channel, commandsUsed, isBotFree, ongoingCmd) {
   if (config.transferOnlyMode) return;
-  let command = config.commands[random(0, config.commands.length - 1)];
-  if (commandsUsed.includes(command)) return;
-  !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - Using command " + command);
-  commandsUsed.push(command);
-  ongoingCommand = true;
-  await channel.sendSlash(botid, command);
-  handleCommand(commandsUsed, command, 53000);
+  if (!ongoingCmd) {
+    // console.log("TESTING")
+    let command = config.commands[random(0, config.commands.length - 1)];
+    if (commandsUsed.includes(command)) return;
+    ongoingCommand = true;
+    if (command === "scratch") {
+      await channel.sendSlash(botid, command, config.autoScratch.scratchAmount);
+      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - Using command " + command);
+      commandsUsed.push(command);
+      handleCommand(commandsUsed, command, 15000);
+    } else {
+      await channel.sendSlash(botid, command);
+      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - Using command " + command);
+      commandsUsed.push(command);
+      handleCommand(commandsUsed, command, 53000);
+    }
+    if (command === "scratch" || command === "postmemes" || command === "highlow" || command === "trivia" || command === "search" || command === "crime" || command === "stream") {
+      isBotFree = false;
+    }
+    // isBotFree = false;
+  }
 }
 
 function removeAllInstances(arr, item) {
@@ -520,6 +560,15 @@ async function clickRandomButton(message, rows) {
     if (!len) return;
     let btn = components[Math.floor(Math.random() * len)];
     return clickButton(message, btn);
+  }, randomInteger(config.cooldowns.buttonClick.minDelay, config.cooldowns.buttonClick.maxDelay));
+}
+async function clickRandomButtonScratch(message, rows) {
+  setTimeout(async () => {
+    const components = message.components[randomInteger(0, rows)]?.components;
+    const len = components?.length;
+    if (!len) return;
+    let btn = components[Math.floor(Math.random() * len)];
+    return clickButton(message, btn, false);
   }, randomInteger(config.cooldowns.buttonClick.minDelay, config.cooldowns.buttonClick.maxDelay));
 }
 async function highLowRandom(message, number) {
@@ -593,30 +642,46 @@ async function autoToolBuyer(message, client, acc_bal, acc_bank) {
     }
   }
 }
-async function autoBuyItem(message, client, acc_bal, acc_bank) {
-  // if command not send by user then return
+async function autoBuyLife(message, client, acc_bal, acc_bank) {
+  if (!message.embeds[0]?.title?.includes("Life Saver") || !message?.embeds[0]?.description?.includes("own") || !config.autoBuyItems.includes("Life Saver")) return;
+  const total_own = message?.description?.replace(",", "").match(/own \*\*(\d+)/)[1];
+  if (!total_own) return;
+  if (Number(total_own) > 0) { } else {
+    if (acc_bal <= 100000 && acc_bank >= 100000) {
+      await message.channel.sendSlash(botid, "withdraw", "100000");
+      setTimeout(async () => {
+        await message.channel.sendSlash(botid, "shop buy", "Life Saver", "1");
+        hook.send(new MessageBuilder().setTitle("Bought Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver ").setColor("#2e3236"));
+      }, randomInteger(3000, 5000));
+    } else {
+      await message.channel.sendSlash(botid, "shop buy", "Life Saver", "1");
+      hook.send(new MessageBuilder().setTitle("Bought Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver ").setColor("#2e3236"));
+    }
+  }
+}
+async function autoUseHorse(message, client) {
   if (message.interaction?.user !== client.user) return;
   let description = message.embeds[0]?.description;
-  if (!Object.keys(config.autoBuyItems).some((item) => message.embeds[0]?.title?.includes(item)) || !description?.includes("own")) return;
-  const total_own = description.match(/own \*\*(\d+)/)[1];
-  if (!total_own) return;
-  let item = Object.keys(config.autoBuyItems).find((item) => message.embeds[0]?.title?.includes(item));
-  if (config.autoBuyItems[item]["50/50"] && randomInteger(0, 1) === 0) return;
-  let to_buy = config.autoBuyItems[item]["minimum"] - Number(total_own);
-  if (to_buy <= 0) return;
-  let pricePerItem = config.autoBuyItems[item]["pricePerItem"];
-  if (acc_bal <= (to_buy * pricePerItem) && acc_bank >= (to_buy * pricePerItem)) {
-    await message.channel.sendSlash(botid, "withdraw",
-      (to_buy * pricePerItem).toString());
+  if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
+    setTimeout(async () => {
+      // await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
+    }, randomInteger(300000, 400000));
+  } else {
+    if (!message.embeds[0]?.title?.includes("Lucky Horseshoe") || !description?.includes("own") || !config.autoUse.includes("Lucky Horseshoe")) return;
+    const total_own = description.replace(",", "").match(/own \*\*(\d+)/)[1];
+    if (!total_own) return;
+    if (Number(total_own) > 0) {
+      await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
+      !config["dontLogUselessThings"] && console.log(chalk.green("Succesfully used a Lucky Horseshoe"));
+    }
   }
-  setTimeout(async () => {
-    await message.channel.sendSlash(botid, "shop buy", item, to_buy.toString());
-  }, randomInteger(2000, 4000));
 }
 async function clickButton(message, btn, once = true) {
   if (once) {
     try {
       let r = await message.clickButton(btn.customId);
+      // if(btn.type === 'BUTTON')
+      // isBotFree = true;
       return r;
     } catch (err) {
       return false;
@@ -624,13 +689,14 @@ async function clickButton(message, btn, once = true) {
   }
   // INFO: try until success
   let interval = setInterval(async () => {
-      try {
-        await message.clickButton(btn.customId);
-        clearInterval(interval);
-      } catch (err) {}
-    },
-    config.cooldowns.buttonClick.minDelay,
-    config.cooldowns.buttonClick.maxDelay);
+    try {
+      // if (btn.disabled) return clearInterval(interval);
+      await message.clickButton(btn.customId);
+      clearInterval(interval);
+    } catch (err) { }
+  },
+    config.cooldowns.buttonClick.minDelay * 1.5,
+    config.cooldowns.buttonClick.maxDelay * 1.2);
 }
 async function playBossGame(message) {
   const btn = message.components[0]?.components[0];
@@ -647,8 +713,6 @@ async function playFGame(message, channel) {
         clickButton(message, btn);
       } else if (message.embeds[0]?.description?.includes("Attack the boss by clicking")) {
         playBossGame(message);
-      } else if (message.embeds[0]?.description?.includes("They can't hear us")) {
-        playBossGame(message);
       }
     }
   }
@@ -663,37 +727,17 @@ async function postMeme(message) {
   const Platform = Platforms[Math.floor(Math.random() * Platforms.length)];
   const MemeType = MemeTypes[Math.floor(Math.random() * MemeTypes.length)];
   setTimeout(async () => {
-      await message.selectMenu(PlatformMenu.customId, [Platform]);
-    },
+    await message.selectMenu(PlatformMenu.customId, [Platform]);
+  },
     config.cooldowns.buttonClick.minDelay,
     config.cooldowns.buttonClick.maxDelay);
   setTimeout(async () => {
-      await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
-    },
+    await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
+    const btn = message.components[2]?.components[0];
+    await clickButton(message, btn, false);
+  },
     config.cooldowns.buttonClick.minDelay * 1.2,
     config.cooldowns.buttonClick.maxDelay);
-  const btn = message.components[2]?.components[0];
-  // console.log(btn.disabled)
-  // INFO: try until success
-  // setTimeout(
-  //   async () => {
-  setTimeout(async () => {
-      if (!btn.disabled) {
-        await clickButton(message, btn, false);
-      } else {
-        setTimeout(async () => {
-            await clickButton(message, btn, false);
-          },
-          1000,
-          2000);
-      }
-    },
-    2000,
-    3000);
-  // },
-  //    1000,
-  //    2000
-  //  );
 }
 async function handleInventoryCommand(client, token, channel, message) {
   await message.channel.sendSlash(botid, "inventory")
@@ -708,9 +752,8 @@ async function handleInventoryCommand(client, token, channel, message) {
     }
     // INFO: when autoGift is enabled and user is not main account
     else if (config.autoGift && token != config.mainAccount) {
-      // Command preview : /market post for_coins type:sell quantity:1 item:Ant for_coins:1 days:1 allow_partial:False private:
       await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
-      console.log(chalk.blue(client.user.tag + " Shared " + quantity + " " + name + " to main account. "));
+      console.log(chalk.blue(client.user.tag + " Shared " + quantity + " " + name + " to main account."));
     }
   }, randomInteger(300, 700));
 }
@@ -738,7 +781,7 @@ async function handleCaptcha(message) {
   }
   // INFO: All pepe find captcha
   if (message.embeds[0]?.title?.toLowerCase().includes("captcha") && message.embeds[0].description?.toLowerCase().includes("pepe")) {
-    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700", ];
+    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700",];
     for (var i = 0; i <= 3; i++) {
       const components = message.components[i]?.components;
       for (var a = 0; a <= 2; a++) {
