@@ -463,7 +463,7 @@ async function doEverything(token, Client, client1, channelId) {
     var c = randomInteger(config.cooldowns.longBreak.minDelay, config.cooldowns.longBreak.maxDelay);
     randomCommand(client, channel, commandsUsed, true, ongoingCmd);
     // INFO: Deposit money
-    if (config.autoDeposit && randomInteger(0, 100) === 2) {
+    if (config.autoDeposit && randomInteger(0, 70) === 7) {
       await channel.sendSlash(botid, "deposit", "max");
       !config["dontLogUselessThings"] && console.log(chalk.yellow("Deposited all coins in the bank."));
       setTimeout(async () => {
@@ -471,7 +471,7 @@ async function doEverything(token, Client, client1, channelId) {
       }, randomInteger(3000, 7000));
     }
     // INFO: if autoGift is on send inventory command
-    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 90) === 7) {
+    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 50) === 7) {
       await channel.sendSlash(botid, "inventory");
     }
     if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
