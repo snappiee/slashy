@@ -97,13 +97,7 @@ client1.on("ready", async () => {
   hook.send(new MessageBuilder().setTitle("Started Slashy").setURL("https://github.com/TahaGorme/Slashy").setDescription("Started grinding on " + config.tokens.length + " accounts.").setColor("#2e3236")
     //.setTimestamp()
   );
-  const channel1 = client1.channels.cache.get(config.mainId.channel);
-  // INFO: Item Use
-  config.mainId.itemToUse.forEach((item) => {
-    setInterval(async () => {
-      await channel1.sendSlash(botid, "use", item);
-    }, randomInteger(1000000, 1500000));
-  });
+  
 });
 // INFO: register main account events
 client1.on("messageCreate", async (message) => {
@@ -474,7 +468,7 @@ async function doEverything(token, Client, client1, channelId) {
       setTimeout(async function() {
         main(channel);
       }, b);
-    } else if (randomInteger(0, 1700) == 1250) {
+    } else if (randomInteger(0, 800) == 400) {
       !config["dontLogUselessThings"] && console.log("\x1b[35m", "Sleeping for " + c / 1000 / 60 + " minutes.");
       !config["dontLogUselessThings"] && hook.send("Sleeping for " + c / 1000 / 60 + " minutes.");
       setTimeout(async function() {
