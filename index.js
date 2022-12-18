@@ -40,7 +40,6 @@ process.on("multipleResolves", (type, promise, reason) => {
   console.log(" [AntiCrash] >>  Multiple Resolves");
   console.log(type, promise, reason);
 });
-const figlet = require("figlet");
 const fs = require("fs-extra");
 const botid = "270904126974590976";
 var bank = 0;
@@ -158,12 +157,6 @@ async function doEverything(token, Client, client1, channelId) {
     await channel.sendSlash(botid, "daily");
     await channel.sendSlash(botid, "item", "horseshoe");
     await channel.sendSlash(botid, "item", "pizza");
-    main(channel);
-    config.autoUse.forEach((item) => {
-      setTimeout(async () => {
-        await channel.sendSlash(botid, "use", item);
-      }, randomInteger(1000000, 1500000));
-    });
   });
   client.on("messageUpdate", async (oldMessage, newMessage) => {
     if (newMessage.interaction?.user !== client.user) return;
