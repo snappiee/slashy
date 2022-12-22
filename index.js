@@ -1,5 +1,5 @@
-var version = "1.8.54";
-// Version 1.8.54
+var version = "1.8.61";
+// Version 1.8.61
 const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
@@ -148,7 +148,7 @@ async function doEverything(token, Client, client1, channelId) {
       inv(botid, channel);
       return;
     }
-    await channel.sendSlash(botid, "balance");
+    await channel.sendSlash(botid, "use", "apple");
     await channel.sendSlash(botid, "daily");
     setTimeout(async () => {
       if (config.autoBuyItems.includes("Life Saver")) await channel.sendSlash(botid, "item", "Life Saver");
@@ -192,7 +192,7 @@ async function doEverything(token, Client, client1, channelId) {
     }
   });
   client.on("messageCreate", async (message) => {
-    if (!message?.embeds[0]?.description?.includes("986396363707281468") && config.autoBuyItems.includes("Lucky Horseshoe") && randomInteger(1, 3) == 2) {
+    if (!message?.embeds[0]?.description?.includes("986396363707281468") && config.autoBuyItems.includes("Lucky Horseshoe") && randomInteger(1, 5) == 2) {
       if (message?.embeds[0]?.description?.includes("You cast out your line and brought back") || message?.embeds[0]?.description?.includes("You went hunting and brought back") || message?.embeds[0]?.description?.includes("You dig in the dirt and brought")) {
         if (acc_bal >= 75000) {
           await channel.sendSlash(botid, "shop buy", "Lucky Horseshoe");
@@ -217,6 +217,11 @@ async function doEverything(token, Client, client1, channelId) {
     }
     if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Apple") && message?.embeds[0]?.description?.includes("Apple expired!")) {
       await channel.sendSlash(botid, "use", "Apple");
+      if (message?.embeds[0]?.description?.includes("You can run this command in")) {
+        setTimeout(async () => {
+          await channel.sendSlash(botid, "use", "apple");
+        }, randomInteger(3000, 7000));
+      }
       !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
     }
     if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Pizza") && message?.embeds[0]?.description?.includes("Pizza expired!")) {
@@ -304,7 +309,7 @@ async function doEverything(token, Client, client1, channelId) {
       setTimeout(async () => {
         isBotFree = true;
         ongoingCmd = false;
-      }, randomInteger(config.cooldowns.commandInterval.minDelay * 1.5, config.cooldowns.commandInterval.maxDelay * 1.5));
+      }, randomInteger(config.cooldowns.commandInterval.minDelay * 3.5, config.cooldowns.commandInterval.maxDelay * 5.5));
     }
     if (commandsUsed.includes("postmemes") && message.embeds[0]?.description?.includes("Pick a meme type and a platform to post a meme on!")) {
       postMeme(message);
@@ -400,11 +405,12 @@ async function doEverything(token, Client, client1, channelId) {
     }
     // INFO: Handle Stream Command
     if (commandsUsed.includes("stream") && message.embeds[0]?.author?.name.includes(" Stream Manager")) {
+      try {
       if (message.embeds[0].fields[1].name !== "Live Since") {
         const components = message.components[0]?.components;
         if (components[0].type !== "SELECT_MENU" && components[0].label.includes("Go Live")) {
-          // console.log("CLICKING BUTAN")
-          await message.clickButton(components[0].customId);
+          // console.log("CLICKING BUTTON")
+					await clickButton(message, components[0].customId);
           setTimeout(async () => {
             if (message.components[0].components[0].type == "SELECT_MENU") {
               const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft",];
@@ -418,9 +424,9 @@ async function doEverything(token, Client, client1, channelId) {
               const components2 = message.components[1]?.components;
               setTimeout(async () => {
                 if (components2[0]) {
-                  await message.clickButton(components2[0].customId, false);
+                  await clickButton(message, components2[0].customId, false);
                 } else {
-                  await message.clickButton(components2[0].customId, false);
+                  await clickButton(message, components2[0].customId, false)
                 }
               },
                 1000,
@@ -454,6 +460,9 @@ async function doEverything(token, Client, client1, channelId) {
           await message.clickButton(message.components[0]?.components[2].customId);
         }
       }
+    } catch (err) {
+                console.error(err)
+                }
     }
   });
   client.login(token);
@@ -471,7 +480,7 @@ async function doEverything(token, Client, client1, channelId) {
       }, randomInteger(3000, 7000));
     }
     // INFO: if autoGift is on send inventory command
-    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 50) === 7) {
+    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 30) === 7) {
       await channel.sendSlash(botid, "inventory");
     }
     if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
@@ -623,7 +632,7 @@ async function autoToolBuyer(message, client, acc_bal, acc_bank) {
   if (config.autoBuy) {
     if (message.flags.has("EPHEMERAL") && message.embeds[0].description) {
       if (message.embeds[0].description?.includes("You don't have a ")) {
-        const item = ["Fishing  Pole", "Hunting Rifle", "Shovel"].find(
+        const item = ["Fishing Pole", "Hunting Rifle", "Shovel"].find(
           (e) => message.embeds[0]?.description?.includes(`don't have a ${e.toLowerCase()}`));
         if (!item) {
           return;
