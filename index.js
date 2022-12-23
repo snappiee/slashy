@@ -382,22 +382,6 @@ async function doEverything(token, Client, client1, channelId) {
     if (commandsUsed.includes("crime") && message.embeds[0]?.description?.includes("What crime do you want to commit?")) {
       clickRandomButton(message, 0);
     }
-    // INFO: Handle Trivia Command
-    if (commandsUsed.includes("trivia") && message.embeds[0]?.description?.includes(" seconds to answer*")) {
-      var time = message.embeds[0].description;
-      var question = message.embeds[0].description.replace(/\*/g, "").split("\n")[0].split('"')[0];
-      let answer = await findAnswer(question);
-      if (answer) selectTriviaAnswers(message, answer);
-      else {
-        clickRandomButton(message, 0);
-        !config["dontLogUselessThings"] && console.log("Unknown trivia found");
-      }
-    }
-    // INFO: Handle HighLow Command
-    if (message.embeds[0]?.description?.includes("I just chose a secret number between 1 and 100.")) {
-      var c = parseInt(message.embeds[0].description.split(" **")[1].replace("**?", "").trim());
-      highLowRandom(message, c > 50 ? 0 : 2);
-    }
     // INFO: Handle Stream Command
     if (commandsUsed.includes("stream") && message.embeds[0]?.author?.name.includes(" Stream Manager")) {
       try {
@@ -407,41 +391,41 @@ async function doEverything(token, Client, client1, channelId) {
             // console.log("CLICKING BUTTON")
             await message.clickButton(components[0].customId);
             setTimeout(async () => {
-              if (message.components[0].components[0].type == "SELECT_MENU") {
-                const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft",];
-                const Game = Games[Math.floor(Math.random() * Games.length)];
-                const GamesMenu = message.components[0].components[0].customId;
-                await message.selectMenu(GamesMenu, [Game]);
-              } else {
-                return;
-              }
-              setTimeout(async () => {
-                const components2 = message.components[1]?.components;
-                setTimeout(async () => {
-                  if (components2[0]) {
-                    await message.clickButton(components2[0].customId);
-                  } else {
-                    await message.clickButton(components2[0].customId);
-                  }
-                },
-                  1000,
-                  1600);
-              },
-                config.cooldowns.buttonClick.minDelay,
-                config.cooldowns.buttonClick.maxDelay);
-              setTimeout(async () => {
-                const check = randomInteger(0, 6);
-                if (check == 0 || check == 1) {
-                  await message.clickButton(message.components[0]?.components[0].customId);
-                } else if (check == 2 || check == 3 || check == 4 || check == 5) {
-                  await message.clickButton(message.components[0]?.components[1]?.customId);
-                } else if (check == 6) {
-                  await message.clickButton(message.components[0]?.components[2].customId);
+                if (message.components[0].components[0].type == "SELECT_MENU") {
+                  const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft", ];
+                  const Game = Games[Math.floor(Math.random() * Games.length)];
+                  const GamesMenu = message.components[0].components[0].customId;
+                  await message.selectMenu(GamesMenu, [Game]);
+                } else {
+                  return;
                 }
+                setTimeout(async () => {
+                    const components2 = message.components[1]?.components;
+                    setTimeout(async () => {
+                        if (components2[0]) {
+                          await message.clickButton(components2[0].customId);
+                        } else {
+                          await message.clickButton(components2[0].customId);
+                        }
+                      },
+                      1000,
+                      1600);
+                  },
+                  config.cooldowns.buttonClick.minDelay,
+                  config.cooldowns.buttonClick.maxDelay);
+                setTimeout(async () => {
+                    const check = randomInteger(0, 6);
+                    if (check == 0 || check == 1) {
+                      await message.clickButton(message.components[0]?.components[0].customId);
+                    } else if (check == 2 || check == 3 || check == 4 || check == 5) {
+                      await message.clickButton(message.components[0]?.components[1]?.customId);
+                    } else if (check == 6) {
+                      await message.clickButton(message.components[0]?.components[2].customId);
+                    }
+                  },
+                  config.cooldowns.buttonClick.minDelay,
+                  config.cooldowns.buttonClick.maxDelay);
               },
-                config.cooldowns.buttonClick.minDelay,
-                config.cooldowns.buttonClick.maxDelay);
-            },
               config.cooldowns.buttonClick.minDelay,
               config.cooldowns.buttonClick.maxDelay * 1.5);
           }
