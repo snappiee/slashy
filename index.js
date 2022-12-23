@@ -1,5 +1,5 @@
-var version = "1.8.61";
-// Version 1.8.61
+var version = "1.8.62";
+// Version 1.8.62
 const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
@@ -23,7 +23,7 @@ axios.get("https://raw.githubusercontent.com/TahaGorme/slashy/main/index.js").th
   console.log(error);
 });
 process.on("unhandledRejection", (reason, p) => {
-  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND",];
+  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND", ];
   if (ignoreErrors.includes(reason.code || reason.message)) return;
   console.log(" [Anti Crash] >>  Unhandled Rejection/Catch");
   console.log(reason, p);
@@ -202,12 +202,12 @@ async function doEverything(token, Client, client1, channelId) {
           setTimeout(async () => {
             await channel.sendSlash(botid, "shop buy", "Lucky Horseshoe");
             !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Lucky Horseshoe! ").setColor("#2e3236"));
-            setTimeout(async () => {
-              await channel.sendSlash(botid, "use", "Lucky Horseshoe");
-              !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Lucky Horseshoe! ").setColor("#2e3236"));
-            }, randomInteger(3000, 5000));
           }, randomInteger(2000, 2500));
         }
+        setTimeout(async () => {
+          await channel.sendSlash(botid, "use", "Lucky Horseshoe");
+          !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Lucky Horseshoe! ").setColor("#2e3236"));
+        }, randomInteger(6000, 8000));
       }
     }
     // You don't own a single Lucky Horseshoe, therefore cannot use it.
@@ -221,8 +221,7 @@ async function doEverything(token, Client, client1, channelId) {
         setTimeout(async () => {
           await channel.sendSlash(botid, "use", "apple");
         }, randomInteger(3000, 7000));
-      }
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
+      }!config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
     }
     if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Pizza") && message?.embeds[0]?.description?.includes("Pizza expired!")) {
       await channel.sendSlash(botid, "use", "Pizza");
@@ -383,10 +382,6 @@ async function doEverything(token, Client, client1, channelId) {
     if (commandsUsed.includes("crime") && message.embeds[0]?.description?.includes("What crime do you want to commit?")) {
       clickRandomButton(message, 0);
     }
-    // INFO: Handle Giveaway Command
-    if (commandsUsed.includes("giveaway view") && message.embeds[0]?.description?.includes("Author")) {
-      GiveawayEnter(message, 0);
-    }
     // INFO: Handle Trivia Command
     if (commandsUsed.includes("trivia") && message.embeds[0]?.description?.includes(" seconds to answer*")) {
       var time = message.embeds[0].description;
@@ -406,63 +401,63 @@ async function doEverything(token, Client, client1, channelId) {
     // INFO: Handle Stream Command
     if (commandsUsed.includes("stream") && message.embeds[0]?.author?.name.includes(" Stream Manager")) {
       try {
-      if (message.embeds[0].fields[1].name !== "Live Since") {
-        const components = message.components[0]?.components;
-        if (components[0].type !== "SELECT_MENU" && components[0].label.includes("Go Live")) {
-          // console.log("CLICKING BUTTON")
-					await clickButton(message, components[0].customId);
-          setTimeout(async () => {
-            if (message.components[0].components[0].type == "SELECT_MENU") {
-              const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft",];
-              const Game = Games[Math.floor(Math.random() * Games.length)];
-              const GamesMenu = message.components[0].components[0].customId;
-              await message.selectMenu(GamesMenu, [Game]);
-            } else {
-              return;
-            }
+        if (message.embeds[0].fields[1].name !== "Live Since") {
+          const components = message.components[0]?.components;
+          if (components[0].type !== "SELECT_MENU" && components[0].label.includes("Go Live")) {
+            // console.log("CLICKING BUTTON")
+            await clickButton(message, components[0].customId);
             setTimeout(async () => {
-              const components2 = message.components[1]?.components;
-              setTimeout(async () => {
-                if (components2[0]) {
-                  await clickButton(message, components2[0].customId, false);
+                if (message.components[0].components[0].type == "SELECT_MENU") {
+                  const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft", ];
+                  const Game = Games[Math.floor(Math.random() * Games.length)];
+                  const GamesMenu = message.components[0].components[0].customId;
+                  await message.selectMenu(GamesMenu, [Game]);
                 } else {
-                  await clickButton(message, components2[0].customId, false)
+                  return;
                 }
+                setTimeout(async () => {
+                    const components2 = message.components[1]?.components;
+                    setTimeout(async () => {
+                        if (components2[0]) {
+                          await clickButton(message, components2[0].customId, false);
+                        } else {
+                          await clickButton(message, components2[0].customId, false)
+                        }
+                      },
+                      1000,
+                      1600);
+                  },
+                  config.cooldowns.buttonClick.minDelay,
+                  config.cooldowns.buttonClick.maxDelay);
+                setTimeout(async () => {
+                    const check = randomInteger(0, 6);
+                    if (check == 0 || check == 1) {
+                      await message.clickButton(message.components[0]?.components[0].customId);
+                    } else if (check == 2 || check == 3 || check == 4 || check == 5) {
+                      await message.clickButton(message.components[0]?.components[1]?.customId);
+                    } else if (check == 6) {
+                      await message.clickButton(message.components[0]?.components[2].customId);
+                    }
+                  },
+                  config.cooldowns.buttonClick.minDelay,
+                  config.cooldowns.buttonClick.maxDelay);
               },
-                1000,
-                1600);
-            },
               config.cooldowns.buttonClick.minDelay,
-              config.cooldowns.buttonClick.maxDelay);
-            setTimeout(async () => {
-              const check = randomInteger(0, 6);
-              if (check == 0 || check == 1) {
-                await message.clickButton(message.components[0]?.components[0].customId);
-              } else if (check == 2 || check == 3 || check == 4 || check == 5) {
-                await message.clickButton(message.components[0]?.components[1]?.customId);
-              } else if (check == 6) {
-                await message.clickButton(message.components[0]?.components[2].customId);
-              }
-            },
-              config.cooldowns.buttonClick.minDelay,
-              config.cooldowns.buttonClick.maxDelay);
-          },
-            config.cooldowns.buttonClick.minDelay,
-            config.cooldowns.buttonClick.maxDelay * 1.5);
+              config.cooldowns.buttonClick.maxDelay * 1.5);
+          }
+        } else if (message.embeds[0].fields[1].name == "Live Since") {
+          const check = randomInteger(0, 6);
+          if (check == 0 || check == 1) {
+            await clickButton(message, message.components[0]?.components[0].customId);
+          } else if (check == 2 || check == 3 || check == 4 || check == 5) {
+            await message.clickButton(message.components[0]?.components[1].customId);
+          } else if (check == 6) {
+            await message.clickButton(message.components[0]?.components[2].customId);
+          }
         }
-      } else if (message.embeds[0].fields[1].name == "Live Since") {
-        const check = randomInteger(0, 6);
-        if (check == 0 || check == 1) {
-          await clickButton(message, message.components[0]?.components[0].customId);
-        } else if (check == 2 || check == 3 || check == 4 || check == 5) {
-          await message.clickButton(message.components[0]?.components[1].customId);
-        } else if (check == 6) {
-          await message.clickButton(message.components[0]?.components[2].customId);
-        }
+      } catch (err) {
+        console.error(err)
       }
-    } catch (err) {
-                console.error(err)
-                }
     }
   });
   client.login(token);
@@ -480,7 +475,7 @@ async function doEverything(token, Client, client1, channelId) {
       }, randomInteger(3000, 7000));
     }
     // INFO: if autoGift is on send inventory command
-    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 30) === 7) {
+    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 50) === 7) {
       await channel.sendSlash(botid, "inventory");
     }
     if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
@@ -492,13 +487,13 @@ async function doEverything(token, Client, client1, channelId) {
     // INFO: Logic of taking break
     if (randomInteger(0, 190) == 50) {
       !config["dontLogUselessThings"] && console.log("\x1b[34m", "Taking a break for " + b / 1000 + " seconds.");
-      !config["dontLogUselessThings"] && hook.send("Taking a break for " + b / 1000 + " seconds.");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Taking a break for " + b / 1000 + " seconds.").setColor('#9bdef6'));
       setTimeout(async function() {
         main(channel);
       }, b);
-    } else if (randomInteger(0, 900) == 400) {
+    } else if (randomInteger(0, 800) == 450) {
       !config["dontLogUselessThings"] && console.log("\x1b[35m", "Sleeping for " + c / 1000 / 60 + " minutes.");
-      !config["dontLogUselessThings"] && hook.send("Sleeping for " + c / 1000 / 60 + " minutes.");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#9bdef6'))
       setTimeout(async function() {
         main(channel);
       }, c);
@@ -655,7 +650,7 @@ async function autoBuyLife(message, client, acc_bal, acc_bank) {
   if (!message.embeds[0]?.title?.includes("Life Saver") || !message?.embeds[0]?.description?.includes("own") || !config.autoBuyItems.includes("Life Saver")) return;
   const total_own = message?.description?.replace(",", "").match(/own \*\*(\d+)/)[1];
   if (!total_own) return;
-  if (Number(total_own) > 0) { } else {
+  if (Number(total_own) > 0) {} else {
     if (acc_bal <= 100000 && acc_bank >= 100000) {
       await message.channel.sendSlash(botid, "withdraw", "100000");
       setTimeout(async () => {
@@ -698,12 +693,12 @@ async function clickButton(message, btn, once = true) {
   }
   // INFO: try until success
   let interval = setInterval(async () => {
-    try {
-      // if (btn.disabled) return clearInterval(interval);
-      await message.clickButton(btn.customId);
-      clearInterval(interval);
-    } catch (err) { }
-  },
+      try {
+        // if (btn.disabled) return clearInterval(interval);
+        await message.clickButton(btn.customId);
+        clearInterval(interval);
+      } catch (err) {}
+    },
     config.cooldowns.buttonClick.minDelay * 1.5,
     config.cooldowns.buttonClick.maxDelay * 1.2);
 }
@@ -736,20 +731,19 @@ async function postMeme(message) {
   const Platform = Platforms[Math.floor(Math.random() * Platforms.length)];
   const MemeType = MemeTypes[Math.floor(Math.random() * MemeTypes.length)];
   setTimeout(async () => {
-    await message.selectMenu(PlatformMenu.customId, [Platform]);
-  },
+      await message.selectMenu(PlatformMenu.customId, [Platform]);
+    },
     config.cooldowns.buttonClick.minDelay,
     config.cooldowns.buttonClick.maxDelay);
   setTimeout(async () => {
-    await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
-    const btn = message.components[2]?.components[0];
-    await clickButton(message, btn, false);
-  },
+      await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
+      const btn = message.components[2]?.components[0];
+      await clickButton(message, btn, false);
+    },
     config.cooldowns.buttonClick.minDelay * 1.2,
     config.cooldowns.buttonClick.maxDelay);
 }
 async function handleInventoryCommand(client, token, channel, message) {
-  await message.channel.sendSlash(botid, "inventory")
   setTimeout(async () => {
     var [name, quantity] = message.embeds[0]?.description?.split("\n")[0].split("** ─ ");
     name = name?.split("**")[1];
@@ -790,7 +784,7 @@ async function handleCaptcha(message) {
   }
   // INFO: All pepe find captcha
   if (message.embeds[0]?.title?.toLowerCase().includes("captcha") && message.embeds[0].description?.toLowerCase().includes("pepe")) {
-    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700",];
+    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700", ];
     for (var i = 0; i <= 3; i++) {
       const components = message.components[i]?.components;
       for (var a = 0; a <= 2; a++) {
@@ -834,13 +828,17 @@ async function playMiniGames(message, edited = false) {
     await clickButton(message, btn, true);
   }
 }
-async function GiveawayEnter(message, channel) {
-  if (message.channel.id === channel) {
-    if (message.embeds[0].description?.includes("Giveaway")) {
-      const btn = message.components[0]?.components[0];
-      if (btn?.label === "Enter") {
-        clickButton(message, btn);
-      }
-    }
+var log = console.log;
+console.log = function() {
+  var first_parameter = arguments[0];
+  var other_parameters = Array.prototype.slice.call(arguments, 1);
+
+  function formatConsoleDate(date) {
+    var hour = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var milliseconds = date.getMilliseconds();
+    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] - ')
   }
-}
+  log.apply(console, [formatConsoleDate(new Date()) + first_parameter].concat(other_parameters));
+};
