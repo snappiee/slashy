@@ -382,6 +382,22 @@ async function doEverything(token, Client, client1, channelId) {
     if (commandsUsed.includes("crime") && message.embeds[0]?.description?.includes("What crime do you want to commit?")) {
       clickRandomButton(message, 0);
     }
+    // INFO: Handle Trivia Command
+    if (commandsUsed.includes("trivia") && message.embeds[0]?.description?.includes(" seconds to answer*")) {
+      var time = message.embeds[0].description;
+      var question = message.embeds[0].description.replace(/\*/g, "").split("\n")[0].split('"')[0];
+      let answer = await findAnswer(question);
+      if (answer) selectTriviaAnswers(message, answer);
+      else {
+        clickRandomButton(message, 0);
+        !config["dontLogUselessThings"] && console.log("Unknown trivia found");
+      }
+    }
+    // INFO: Handle HighLow Command
+    if (message.embeds[0]?.description?.includes("I just chose a secret number between 1 and 100.")) {
+      var c = parseInt(message.embeds[0].description.split(" **")[1].replace("**?", "").trim());
+      highLowRandom(message, c > 50 ? 0 : 2);
+    }
     // INFO: Handle Stream Command
     if (commandsUsed.includes("stream") && message.embeds[0]?.author?.name.includes(" Stream Manager")) {
       try {
@@ -470,14 +486,14 @@ async function doEverything(token, Client, client1, channelId) {
     }
     // INFO: Logic of taking break
     if (randomInteger(0, 190) == 50) {
-      !config["dontLogUselessThings"] && console.log("\x1b[34m", "Taking a break for " + b / 1000 + " seconds.");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Taking a break for " + b / 1000 + " seconds.").setColor('#9bdef6'));
+      !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[34m", " - Taking a break for " + b / 1000 + " seconds.");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Taking a break for " + b / 1000 + " seconds.").setColor('#9bdef6'));
       setTimeout(async function() {
         main(channel);
       }, b);
     } else if (randomInteger(0, 800) == 450) {
-      !config["dontLogUselessThings"] && console.log("\x1b[35m", "Sleeping for " + c / 1000 / 60 + " minutes.");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#9bdef6'))
+      !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[35m", " - Sleeping for " + c / 1000 / 60 + " minutes.");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#9bdef6'))
       setTimeout(async function() {
         main(channel);
       }, c);
