@@ -23,7 +23,7 @@ axios.get("https://raw.githubusercontent.com/TahaGorme/slashy/main/index.js").th
   console.log(error);
 });
 process.on("unhandledRejection", (reason, p) => {
-  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND", ];
+  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND",];
   if (ignoreErrors.includes(reason.code || reason.message)) return;
   console.log(" [Anti Crash] >>  Unhandled Rejection/Catch");
   console.log(reason, p);
@@ -221,7 +221,7 @@ async function doEverything(token, Client, client1, channelId) {
         setTimeout(async () => {
           await channel.sendSlash(botid, "use", "apple");
         }, randomInteger(3000, 7000));
-      }!config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
+      } !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
     }
     if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Pizza") && message?.embeds[0]?.description?.includes("Pizza expired!")) {
       await channel.sendSlash(botid, "use", "Pizza");
@@ -405,50 +405,50 @@ async function doEverything(token, Client, client1, channelId) {
           const components = message.components[0]?.components;
           if (components[0].type !== "SELECT_MENU" && components[0].label.includes("Go Live")) {
             // console.log("CLICKING BUTTON")
-            await clickButton(message, components[0].customId);
+            await message.clickButton(components[0].customId);
             setTimeout(async () => {
-                if (message.components[0].components[0].type == "SELECT_MENU") {
-                  const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft", ];
-                  const Game = Games[Math.floor(Math.random() * Games.length)];
-                  const GamesMenu = message.components[0].components[0].customId;
-                  await message.selectMenu(GamesMenu, [Game]);
-                } else {
-                  return;
-                }
+              if (message.components[0].components[0].type == "SELECT_MENU") {
+                const Games = ["Apex Legends", "COD MW2", "CS GO", "Dead by Daylight", "Destiny 2", "Dota 2", "Elden Ring", "Escape from Tarkov", "FIFA 22", "Fortnite", "Grand Theft Auto V", "Hearthstone", "Just Chatting", "League of Legends", "Lost Ark", "Minecraft", "PUBG Battlegrounds", "Rainbox Six Siege", "Rocket League", "Rust", "Teamfight Tactics", "Valorant", "Warzone 2", "World of Tanks", "World of Warcraft",];
+                const Game = Games[Math.floor(Math.random() * Games.length)];
+                const GamesMenu = message.components[0].components[0].customId;
+                await message.selectMenu(GamesMenu, [Game]);
+              } else {
+                return;
+              }
+              setTimeout(async () => {
+                const components2 = message.components[1]?.components;
                 setTimeout(async () => {
-                    const components2 = message.components[1]?.components;
-                    setTimeout(async () => {
-                        if (components2[0]) {
-                          await clickButton(message, components2[0].customId, false);
-                        } else {
-                          await clickButton(message, components2[0].customId, false)
-                        }
-                      },
-                      1000,
-                      1600);
-                  },
-                  config.cooldowns.buttonClick.minDelay,
-                  config.cooldowns.buttonClick.maxDelay);
-                setTimeout(async () => {
-                    const check = randomInteger(0, 6);
-                    if (check == 0 || check == 1) {
-                      await message.clickButton(message.components[0]?.components[0].customId);
-                    } else if (check == 2 || check == 3 || check == 4 || check == 5) {
-                      await message.clickButton(message.components[0]?.components[1]?.customId);
-                    } else if (check == 6) {
-                      await message.clickButton(message.components[0]?.components[2].customId);
-                    }
-                  },
-                  config.cooldowns.buttonClick.minDelay,
-                  config.cooldowns.buttonClick.maxDelay);
+                  if (components2[0]) {
+                    await message.clickButton(components2[0].customId);
+                  } else {
+                    await message.clickButton(components2[0].customId);
+                  }
+                },
+                  1000,
+                  1600);
               },
+                config.cooldowns.buttonClick.minDelay,
+                config.cooldowns.buttonClick.maxDelay);
+              setTimeout(async () => {
+                const check = randomInteger(0, 6);
+                if (check == 0 || check == 1) {
+                  await message.clickButton(message.components[0]?.components[0].customId);
+                } else if (check == 2 || check == 3 || check == 4 || check == 5) {
+                  await message.clickButton(message.components[0]?.components[1]?.customId);
+                } else if (check == 6) {
+                  await message.clickButton(message.components[0]?.components[2].customId);
+                }
+              },
+                config.cooldowns.buttonClick.minDelay,
+                config.cooldowns.buttonClick.maxDelay);
+            },
               config.cooldowns.buttonClick.minDelay,
               config.cooldowns.buttonClick.maxDelay * 1.5);
           }
         } else if (message.embeds[0].fields[1].name == "Live Since") {
           const check = randomInteger(0, 6);
           if (check == 0 || check == 1) {
-            await clickButton(message, message.components[0]?.components[0].customId);
+            await message.clickButton(message.components[0]?.components[0].customId);
           } else if (check == 2 || check == 3 || check == 4 || check == 5) {
             await message.clickButton(message.components[0]?.components[1].customId);
           } else if (check == 6) {
@@ -650,7 +650,7 @@ async function autoBuyLife(message, client, acc_bal, acc_bank) {
   if (!message.embeds[0]?.title?.includes("Life Saver") || !message?.embeds[0]?.description?.includes("own") || !config.autoBuyItems.includes("Life Saver")) return;
   const total_own = message?.description?.replace(",", "").match(/own \*\*(\d+)/)[1];
   if (!total_own) return;
-  if (Number(total_own) > 0) {} else {
+  if (Number(total_own) > 0) { } else {
     if (acc_bal <= 100000 && acc_bank >= 100000) {
       await message.channel.sendSlash(botid, "withdraw", "100000");
       setTimeout(async () => {
@@ -693,12 +693,12 @@ async function clickButton(message, btn, once = true) {
   }
   // INFO: try until success
   let interval = setInterval(async () => {
-      try {
-        // if (btn.disabled) return clearInterval(interval);
-        await message.clickButton(btn.customId);
-        clearInterval(interval);
-      } catch (err) {}
-    },
+    try {
+      // if (btn.disabled) return clearInterval(interval);
+      await message.clickButton(btn.customId);
+      clearInterval(interval);
+    } catch (err) { }
+  },
     config.cooldowns.buttonClick.minDelay * 1.5,
     config.cooldowns.buttonClick.maxDelay * 1.2);
 }
@@ -731,15 +731,15 @@ async function postMeme(message) {
   const Platform = Platforms[Math.floor(Math.random() * Platforms.length)];
   const MemeType = MemeTypes[Math.floor(Math.random() * MemeTypes.length)];
   setTimeout(async () => {
-      await message.selectMenu(PlatformMenu.customId, [Platform]);
-    },
+    await message.selectMenu(PlatformMenu.customId, [Platform]);
+  },
     config.cooldowns.buttonClick.minDelay,
     config.cooldowns.buttonClick.maxDelay);
   setTimeout(async () => {
-      await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
-      const btn = message.components[2]?.components[0];
-      await clickButton(message, btn, false);
-    },
+    await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
+    const btn = message.components[2]?.components[0];
+    await clickButton(message, btn, false);
+  },
     config.cooldowns.buttonClick.minDelay * 1.2,
     config.cooldowns.buttonClick.maxDelay);
 }
@@ -784,7 +784,7 @@ async function handleCaptcha(message) {
   }
   // INFO: All pepe find captcha
   if (message.embeds[0]?.title?.toLowerCase().includes("captcha") && message.embeds[0].description?.toLowerCase().includes("pepe")) {
-    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700", ];
+    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700",];
     for (var i = 0; i <= 3; i++) {
       const components = message.components[i]?.components;
       for (var a = 0; a <= 2; a++) {
