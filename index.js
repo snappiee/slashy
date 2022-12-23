@@ -451,12 +451,12 @@ async function doEverything(token, Client, client1, channelId) {
     var c = randomInteger(config.cooldowns.longBreak.minDelay, config.cooldowns.longBreak.maxDelay);
     randomCommand(client, channel, commandsUsed, true, ongoingCmd);
     // INFO: Deposit money
-    if (config.autoDeposit && randomInteger(0, 70) === 7) {
+    if (config.autoDeposit && randomInteger(0, 50) === 7) {
       await channel.sendSlash(botid, "deposit", "max");
       !config["dontLogUselessThings"] && console.log(chalk.yellow("Deposited all coins in the bank."));
       setTimeout(async () => {
         await channel.sendSlash(botid, "balance");
-      }, randomInteger(3000, 7000));
+      }, randomInteger(30000, 70000));
     }
     // INFO: if autoGift is on send inventory command
     if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 50) === 7) {
@@ -501,12 +501,12 @@ async function randomCommand(client, channel, commandsUsed, isBotFree, ongoingCm
     ongoingCommand = true;
     if (command === "scratch") {
       await channel.sendSlash(botid, command, config.autoScratch.scratchAmount);
-      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - Using command " + command);
+      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - " + chalk.blue("[DEBUG]") + " /" + command);
       commandsUsed.push(command);
       handleCommand(commandsUsed, command, 15000);
     } else {
       await channel.sendSlash(botid, command);
-      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - Using command " + command);
+      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - " + chalk.blue("[DEBUG]") + " /" + command);
       commandsUsed.push(command);
       handleCommand(commandsUsed, command, 53000);
     }
@@ -728,6 +728,7 @@ async function postMeme(message) {
     config.cooldowns.buttonClick.maxDelay);
 }
 async function handleInventoryCommand(client, token, channel, message) {
+  await message.channel.sendSlash(botid, "inventory")
   setTimeout(async () => {
     var [name, quantity] = message.embeds[0]?.description?.split("\n")[0].split("** ─ ");
     name = name?.split("**")[1];
@@ -822,7 +823,7 @@ console.log = function() {
     var minutes = date.getMinutes();
     var seconds = date.getSeconds();
     var milliseconds = date.getMilliseconds();
-    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] - ')
+    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] ')
   }
   log.apply(console, [formatConsoleDate(new Date()) + first_parameter].concat(other_parameters));
 };
