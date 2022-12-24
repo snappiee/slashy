@@ -747,7 +747,7 @@ async function handleInventoryCommand(client, token, channel, message) {
   await message.channel.sendSlash(botid, "inventory")
   setTimeout(async () => {
     var [name, quantity] = message.embeds[0]?.description?.split("\n")[0].split("** ─ ");
-    name = name?.split("**")[1];
+    name = name?.split("> ")[1];
     console.log(chalk.blue(client.user.tag + " " + name + ": " + quantity));
     isInventoryEmpty = name != undefined;
     // INFO: if serverEventsDonateMode enabled
