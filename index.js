@@ -23,7 +23,7 @@ axios.get("https://raw.githubusercontent.com/TahaGorme/slashy/main/index.js").th
   console.log(error);
 });
 process.on("unhandledRejection", (reason, p) => {
-  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND",];
+  const ignoreErrors = ["MESSAGE_ID_NOT_FOUND", "INTERACTION_TIMEOUT", "BUTTON_NOT_FOUND", ];
   if (ignoreErrors.includes(reason.code || reason.message)) return;
   console.log(" [Anti Crash] >>  Unhandled Rejection/Catch");
   console.log(reason, p);
@@ -95,6 +95,12 @@ client1.on("ready", async () => {
     //.setTimestamp()
   );
   // autoBuyLife(channel1);
+});
+client1.on("messageCreate", async (message) => {
+  // INFO: Pending Confirmation
+  if (message.embeds[0]?.title?.includes("Pending Confirmation") && message.interaction?.user == client1.user) {
+    highLowRandom(message, 1);
+  }
 });
 client1.login(config.mainAccount);
 start();
@@ -221,7 +227,7 @@ async function doEverything(token, Client, client1, channelId) {
         setTimeout(async () => {
           await channel.sendSlash(botid, "use", "apple");
         }, randomInteger(3000, 7000));
-      } !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
+      }!config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
     }
     if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Pizza") && message?.embeds[0]?.description?.includes("Pizza expired!")) {
       await channel.sendSlash(botid, "use", "Pizza");
@@ -366,6 +372,9 @@ async function doEverything(token, Client, client1, channelId) {
     handleCaptcha(message);
     // INFO: Return if transferOnlyMode is enabled
     if (config.transferOnlyMode) return;
+    if (message.embeds[0]?.title === "Pending Confirmation" && message.interaction?.user == client.user) {
+      highLowRandom(message, 1);
+    }
     // INFO: When receive response of /balance command
     if (message.embeds[0]?.title?.includes(client.user.tag + "'s Balance")) {
       wallet = message.embeds[0].description.split("\n")[0].replace("**Wallet**: ", "");
@@ -486,14 +495,14 @@ async function doEverything(token, Client, client1, channelId) {
     }
     // INFO: Logic of taking break
     if (randomInteger(0, 190) == 50) {
-      !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[34m", " - Taking a break for " + b / 1000 + " seconds.");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Taking a break for " + b / 1000 + " seconds.").setColor('#9bdef6'));
+      !config["dontLogUselessThings"] && console.log(client.user.tag + "\x1b[34m", " - Taking a break for " + b / 1000 + " seconds.");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle(client.user.tag + " - Taking a break for " + b / 1000 + " seconds.").setColor('#9bdef6'));
       setTimeout(async function() {
         main(channel);
       }, b);
     } else if (randomInteger(0, 800) == 450) {
-      !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[35m", " - Sleeping for " + c / 1000 / 60 + " minutes.");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#9bdef6'))
+      !config["dontLogUselessThings"] && console.log(client.user.tag + "\x1b[35m", " - Sleeping for " + c / 1000 / 60 + " minutes.");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle(client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('##ff0000'))
       setTimeout(async function() {
         main(channel);
       }, c);
@@ -650,7 +659,7 @@ async function autoBuyLife(message, client, acc_bal, acc_bank) {
   if (!message.embeds[0]?.title?.includes("Life Saver") || !message?.embeds[0]?.description?.includes("own") || !config.autoBuyItems.includes("Life Saver")) return;
   const total_own = message?.description?.replace(",", "").match(/own \*\*(\d+)/)[1];
   if (!total_own) return;
-  if (Number(total_own) > 0) { } else {
+  if (Number(total_own) > 0) {} else {
     if (acc_bal <= 100000 && acc_bank >= 100000) {
       await message.channel.sendSlash(botid, "withdraw", "100000");
       setTimeout(async () => {
@@ -693,12 +702,12 @@ async function clickButton(message, btn, once = true) {
   }
   // INFO: try until success
   let interval = setInterval(async () => {
-    try {
-      // if (btn.disabled) return clearInterval(interval);
-      await message.clickButton(btn.customId);
-      clearInterval(interval);
-    } catch (err) { }
-  },
+      try {
+        // if (btn.disabled) return clearInterval(interval);
+        await message.clickButton(btn.customId);
+        clearInterval(interval);
+      } catch (err) {}
+    },
     config.cooldowns.buttonClick.minDelay * 1.5,
     config.cooldowns.buttonClick.maxDelay * 1.2);
 }
@@ -731,15 +740,15 @@ async function postMeme(message) {
   const Platform = Platforms[Math.floor(Math.random() * Platforms.length)];
   const MemeType = MemeTypes[Math.floor(Math.random() * MemeTypes.length)];
   setTimeout(async () => {
-    await message.selectMenu(PlatformMenu.customId, [Platform]);
-  },
+      await message.selectMenu(PlatformMenu.customId, [Platform]);
+    },
     config.cooldowns.buttonClick.minDelay,
     config.cooldowns.buttonClick.maxDelay);
   setTimeout(async () => {
-    await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
-    const btn = message.components[2]?.components[0];
-    await clickButton(message, btn, false);
-  },
+      await message.selectMenu(MemeTypeMenu.customId, [MemeType]);
+      const btn = message.components[2]?.components[0];
+      await clickButton(message, btn, false);
+    },
     config.cooldowns.buttonClick.minDelay * 1.2,
     config.cooldowns.buttonClick.maxDelay);
 }
@@ -785,7 +794,7 @@ async function handleCaptcha(message) {
   }
   // INFO: All pepe find captcha
   if (message.embeds[0]?.title?.toLowerCase().includes("captcha") && message.embeds[0].description?.toLowerCase().includes("pepe")) {
-    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700",];
+    var pepe = ["819014822867894304", "796765883120353280", "860602697942040596", "860602923665588284", "860603013063507998", "936007340736536626", "933194488241864704", "680105017532743700", ];
     for (var i = 0; i <= 3; i++) {
       const components = message.components[i]?.components;
       for (var a = 0; a <= 2; a++) {
