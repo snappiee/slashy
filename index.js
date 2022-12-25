@@ -302,7 +302,6 @@ async function doEverything(token, Client, client1, channelId) {
     if (message.interaction?.user !== client.user || message.author.id !== botid || !channel) return;
     // autoBuyItem(message, client, acc_bal, acc_bank);
     autoToolBuyer(message, client, acc_bal, acc_bank);
-    autoBuyLife(message, client, acc_bal, acc_bank);
     // autoUseHorse(message, client);
     if (message.author.id !== botid || message.channel.id !== channel.id) return;
     // }
@@ -655,7 +654,6 @@ async function autoToolBuyer(message, client, acc_bal, acc_bank) {
     }
   }
 }
-
 async function clickButton(message, btn, once = true) {
   if (once) {
     try {
@@ -749,7 +747,7 @@ async function handleCaptcha(message) {
     hook.send(captcha);
     for (var a = 0; a <= 3; a++) {
       var buttomEmoji = components[a].emoji.id;
-      console.log("buttonEMoji" + buttomEmoji);
+      console.log("buttonEmoji" + buttomEmoji);
       hook.send(buttomEmoji);
       if (captcha.includes(buttomEmoji)) {
         console.log(components[a].customId);
@@ -811,10 +809,9 @@ console.log = function() {
   var other_parameters = Array.prototype.slice.call(arguments, 1);
 
   function formatConsoleDate(date) {
-    var hour = date.getHours();
+    var hour = date.getHours() + 7;
     var minutes = date.getMinutes();
     var seconds = date.getSeconds();
-    var milliseconds = date.getMilliseconds();
     return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] ')
   }
   log.apply(console, [formatConsoleDate(new Date()) + first_parameter].concat(other_parameters));
