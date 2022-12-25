@@ -655,40 +655,7 @@ async function autoToolBuyer(message, client, acc_bal, acc_bank) {
     }
   }
 }
-async function autoBuyLife(message, client, acc_bal, acc_bank) {
-  if (!message.embeds[0]?.title?.includes("Life Saver") || !message?.embeds[0]?.description?.includes("own") || !config.autoBuyItems.includes("Life Saver")) return;
-  const total_own = message?.description?.replace(",", "").match(/own \*\*(\d+)/)[1];
-  if (!total_own) return;
-  if (Number(total_own) > 0) {} else {
-    if (acc_bal <= 100000 && acc_bank >= 100000) {
-      await message.channel.sendSlash(botid, "withdraw", "100000");
-      setTimeout(async () => {
-        await message.channel.sendSlash(botid, "shop buy", "Life Saver", "1");
-        hook.send(new MessageBuilder().setTitle("Bought Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver ").setColor("#2e3236"));
-      }, randomInteger(3000, 5000));
-    } else {
-      await message.channel.sendSlash(botid, "shop buy", "Life Saver", "1");
-      hook.send(new MessageBuilder().setTitle("Bought Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver ").setColor("#2e3236"));
-    }
-  }
-}
-async function autoUseHorse(message, client) {
-  if (message.interaction?.user !== client.user) return;
-  let description = message.embeds[0]?.description;
-  if (message?.embeds[0]?.description?.includes("You can't use this item, you've already used it and it's active right now!")) {
-    setTimeout(async () => {
-      // await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
-    }, randomInteger(300000, 400000));
-  } else {
-    if (!message.embeds[0]?.title?.includes("Lucky Horseshoe") || !description?.includes("own") || !config.autoUse.includes("Lucky Horseshoe")) return;
-    const total_own = description.replace(",", "").match(/own \*\*(\d+)/)[1];
-    if (!total_own) return;
-    if (Number(total_own) > 0) {
-      await message.channel.sendSlash(botid, "use", "Lucky Horseshoe");
-      !config["dontLogUselessThings"] && console.log(chalk.green("Succesfully used a Lucky Horseshoe"));
-    }
-  }
-}
+
 async function clickButton(message, btn, once = true) {
   if (once) {
     try {
