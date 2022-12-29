@@ -833,7 +833,7 @@ async function handleInventoryCommand(client, token, channel, message) {
     // INFO: when autoGift is enabled and user is not main account
     else if (config.autoGift && token != config.mainAccount) {
       await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
-      console.log(chalk.blue(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
+      console.log(chalk.red(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
     }
   }, randomInteger(300, 700));
 }
