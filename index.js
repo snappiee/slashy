@@ -525,7 +525,7 @@ async function doEverything(token, Client, client1, channelId) {
     if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
       await channel.sendSlash(botid, "balance");
     }
-    randomInteger(config.cooldowns.checkLifeSaver.minDelay, config.cooldowns.checkLifeSaver.maxDelay);
+
     // INFO: Sell All Items if autoSell is on
     if (config.autoSell && token != config.mainAccount && randomInteger(0, 4) === 100) {
       await channel.sendSlash(botid, "sell all");
