@@ -172,7 +172,8 @@ async function doEverything(token, Client, client1, channelId) {
       return;
     }
     await channel.sendSlash(botid, "daily");
-    await channel.sendSlash(botid, "use", "apple")
+    await channel.sendSlash(botid, "use", "apple");
+    await channel.sendSlash(botid, "balance")
     setTimeout(async () => {
       if (config.autoBuyItems.includes("Life Saver")) await channel.sendSlash(botid, "item", "Life Saver");
     }, randomInteger(1000, 3000));
@@ -728,33 +729,6 @@ async function autoBuyLife(message, client, acc_bal, acc_bank) {
       hook.send(new MessageBuilder().setTitle("Bought Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver ").setColor("#2e3236"));
     }
   }
-}
-async function autoBuyItem(message, client, acc_bal, acc_bank) {
-  // if command not send by user then return
-  if (message.interaction?.user !== client.user) return;
-  let description = message.embeds[0]?.description;
-  var ab = false;
-  for (var a = 0; a < config.autoBuyItems.length; a++) {
-    if (config.autoBuyItems[a]) {
-      ab = true;
-      break;
-    }
-  }
-  if (!ab || !description?.includes("own")) return;
-  const total_own = description.replace(",", "").match(/own \*\*(\d+)/)[1];
-  if (!total_own) return;
-  let item = Object.keys(config.autoBuyItems).find((item) => message.embeds[0]?.title?.includes(item));
-  if (config.autoBuyItems[item]["50/50"] && randomInteger(0, 1) === 0) return;
-  let to_buy = config.autoBuyItems[item]["minimum"] - Number(total_own);
-  if (to_buy <= 0) return;
-  let pricePerItem = config.autoBuyItems[item]["pricePerItem"];
-  if (acc_bal <= (to_buy * pricePerItem) && acc_bank >= (to_buy * pricePerItem)) {
-    await message.channel.sendSlash(botid, "withdraw",
-      (to_buy * pricePerItem).toString());
-  }
-  setTimeout(async () => {
-    await message.channel.sendSlash(botid, "shop buy", item, to_buy.toString());
-  }, randomInteger(2000, 4000));
 }
 async function clickButton(message, btn, once = true) {
   if (once) {
