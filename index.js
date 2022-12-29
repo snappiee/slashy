@@ -734,8 +734,6 @@ async function clickButton(message, btn, once = true) {
   if (once) {
     try {
       let r = await message.clickButton(btn.customId);
-      // if(btn.type === 'BUTTON')
-      // isBotFree = true;
       return r;
     } catch (err) {
       return false;
@@ -823,7 +821,7 @@ async function handleCaptcha(message) {
     hook.send(captcha);
     for (var a = 0; a <= 3; a++) {
       var buttomEmoji = components[a].emoji.id;
-      console.log("buttonEMoji" + buttomEmoji);
+      console.log("buttonEmoji" + buttomEmoji);
       hook.send(buttomEmoji);
       if (captcha.includes(buttomEmoji)) {
         console.log(components[a].customId);
