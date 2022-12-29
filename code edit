@@ -1,13 +1,8 @@
-var version = "1.8.7";
-// Version 1.8.7
+var version = "1.8.62";
+// Version 1.8.62
 const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
-const fs = require("fs-extra");
-const SimplDB = require('simpl.db');
-const db = new SimplDB();
-const Users = db.createCollection('users');
-const collection = Users.getAll()
 const chalk = require("chalk");
 const config = process.env.JSON ? JSON.parse(process.env.JSON) : require("./config.json");
 const {
@@ -22,7 +17,6 @@ axios.get("https://raw.githubusercontent.com/TahaGorme/slashy/main/index.js").th
     console.log(chalk.bold("Version " + version));
     if (v !== version) {
       console.log(chalk.bold.bgRed("There is a new version available: " + v + "           \nPlease update. " + chalk.underline("https://github.com/TahaGorme/slashy")));
-      hook.send(new MessageBuilder().setTitle("New Version").setURL("https://github.com/TahaGorme/Slashy").setDescription("Current version:** " + version + "**\nNew version: **" + v + "**\nPlease update: " + "https://github.com/TahaGorme/slashy").setColor("#E74C3C"));
     }
   }
 }).catch(function(error) {
@@ -33,9 +27,6 @@ process.on("unhandledRejection", (reason, p) => {
   if (ignoreErrors.includes(reason.code || reason.message)) return;
   console.log(" [Anti Crash] >>  Unhandled Rejection/Catch");
   console.log(reason, p);
-  if (reason?.code?.includes('TOKEN_INVALID')) {
-    accounts = +accounts - 1
-  }
 });
 process.on("uncaughtException", (e, o) => {
   console.log(" [Anti Crash] >>  Uncaught Exception/Catch");
@@ -49,11 +40,11 @@ process.on("multipleResolves", (type, promise, reason) => {
   console.log(" [AntiCrash] >>  Multiple Resolves");
   console.log(type, promise, reason);
 });
+const fs = require("fs-extra");
 const botid = "270904126974590976";
 var bank = 0;
-var purse = 0;
+var wallet = 0;
 var net = 0;
-var accounts = 0;
 // const config = require("./config.json");
 // INFO: Load batch token file if enabled
 if (config.isBatchTokenFile) {
@@ -79,7 +70,11 @@ app.get("/", async (req, res) => {
   });
 });
 app.get("/api", async (req, res) => {
-  res.json(collection);
+  res.json({
+    bank: bank,
+    wallet: wallet,
+    net: net,
+  });
 });
 app.listen(7500);
 console.log(chalk.bold.red("Server started on " + chalk.underline("http://localhost:7500")));
@@ -99,30 +94,13 @@ client1.on("ready", async () => {
   hook.send(new MessageBuilder().setTitle("Started Slashy").setURL("https://github.com/TahaGorme/Slashy").setDescription("Started grinding on " + config.tokens.length + " accounts.").setColor("#2e3236")
     //.setTimestamp()
   );
-  const channel1 = await client1.channels.cache.get(config.mainId.channel);
-  // INFO: Item Use
-  config.mainId.itemToUse.forEach((item) => {
-    setInterval(async () => {
-      await channel1.sendSlash(botid, "use", item);
-    }, randomInteger(1000000, 1500000));
-  });
   // autoBuyLife(channel1);
 });
-// INFO: register main account events
 client1.on("messageCreate", async (message) => {
   // INFO: Pending Confirmation
   if (message.embeds[0]?.title?.includes("Pending Confirmation") && message.interaction?.user == client1.user) {
     highLowRandom(message, 1);
-    if (config.transferOnlyMode && !config.serverEventsDonateMode) {
-      setTimeout(async function() {
-        inv(botid, channel);
-      }, randomInteger(config.cooldowns.transfer.minDelay, config.cooldowns.transfer.maxDelay));
-    }
   }
-  // INFO: Play Minigame
-  // INFO: Register captcha
-  handleCaptcha(message);
-  const channel1 = client1.channels.cache.get(config.mainId.channel);
 });
 client1.login(config.mainAccount);
 start();
@@ -137,8 +115,6 @@ async function doEverything(token, Client, client1, channelId) {
   var channel;
   var acc_bal = 0;
   var acc_bank = 0;
-  var acc_net = 0;
-  accounts = +accounts + 1
   var isBotFree = true;
   var ongoingCmd = false;
   const client = new Client({
@@ -147,7 +123,6 @@ async function doEverything(token, Client, client1, channelId) {
   });
   var commandsUsed = [];
   var ongoingCommand = false;
-  var isOnBreak = false;
   async function findAnswer(question) {
     const file = config.useDarkendTrivia ? "./darkend-trivia.json" : "./trivia.json";
     const trivia = await fs.readJson(file);
@@ -163,16 +138,24 @@ async function doEverything(token, Client, client1, channelId) {
   }
   client.on("ready", async () => {
     client.user.setStatus("invisible");
+    // 		console.log(
+    // 			chalk.yellow(
+    // 				figlet.textSync("Slashy", { horizontalLayout: "full" })
+    // 			)
+    // 		);
     console.log(chalk.green(`Logged in as ${chalk.cyanBright(client.user.tag)}`));
     channel = client.channels.cache.get(channelId);
     if (!channel) return console.log(chalk.red("Channel not found! " + channelId));
+    // console.log(chalk.magenta("Playing Dank Memer in " + channel.name));
+    // !config["dontLogUselessThings"] &&
+    // hook.send("Started. Playing Dank Memer in <#" + channel.id + ">");
     if (config.transferOnlyMode || config.serverEventsDonateMode) {
       console.log(chalk.red("Transfer Only Mode or Server Events Donate is enabled."));
       inv(botid, channel);
       return;
     }
+    await channel.sendSlash(botid, "use", "apple");
     await channel.sendSlash(botid, "daily");
-    await channel.sendSlash(botid, "use", "apple")
     setTimeout(async () => {
       if (config.autoBuyItems.includes("Life Saver")) await channel.sendSlash(botid, "item", "Life Saver");
     }, randomInteger(1000, 3000));
@@ -180,7 +163,7 @@ async function doEverything(token, Client, client1, channelId) {
     config.autoUse.forEach((item) => {
       setTimeout(async () => {
         await channel.sendSlash(botid, "use", item);
-      }, randomInteger(12000, 16000));
+      }, randomInteger(3000, 6000));
     });
   });
   client.on("messageUpdate", async (oldMessage, newMessage) => {
@@ -234,13 +217,21 @@ async function doEverything(token, Client, client1, channelId) {
       }
     }
     // You don't own a single Lucky Horseshoe, therefore cannot use it.
-    if (!message?.guild && !isOnBreak && message?.author?.id == botid && config.autoUse.includes("Lucky Horseshoe") && message?.embeds[0]?.description?.includes("Lucky Horseshoe expired!")) {
+    if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Lucky Horseshoe") && message?.embeds[0]?.description?.includes("Lucky Horseshoe expired!")) {
       await channel.sendSlash(botid, "use", "Lucky Horseshoe");
       !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Lucky Horseshoe! ").setColor("#2e3236"));
     }
-    if (!message?.guild && !isOnBreak && message?.author?.id == botid && config.autoUse.includes("Apple") && message?.embeds[0]?.description?.includes("Apple expired!")) {
+    if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Apple") && message?.embeds[0]?.description?.includes("Apple expired!")) {
       await channel.sendSlash(botid, "use", "Apple");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
+      if (message?.embeds[0]?.description?.includes("You can run this command in")) {
+        setTimeout(async () => {
+          await channel.sendSlash(botid, "use", "apple");
+        }, randomInteger(3000, 7000));
+      }!config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Apple").setURL(message.url).setDescription(client.user.username + ": Succesfully used an Apple! ").setColor("#2e3236"));
+    }
+    if (!message?.guild && message?.author?.id == botid && config.autoUse.includes("Pizza") && message?.embeds[0]?.description?.includes("Pizza expired!")) {
+      await channel.sendSlash(botid, "use", "Pizza");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used Pizza").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Pizza! ").setColor("#2e3236"));
     }
     // Your lifesaver protected you!
     if (!message?.guild && message?.author?.id == botid && message?.embeds[0]?.title?.includes("Your lifesaver protected you") && config.autoBuyItems.includes("Life Saver")) {
@@ -265,12 +256,12 @@ async function doEverything(token, Client, client1, channelId) {
         setTimeout(async () => {
           await channel.sendSlash(botid, "shop buy", "Lucky Horseshoe");
           !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Bought a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Lucky Horseshoe! ").setColor("#2e3236"));
+          setTimeout(async () => {
+            await channel.sendSlash(botid, "use", "Lucky Horseshoe");
+            !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Lucky Horseshoe! ").setColor("#2e3236"));
+          }, randomInteger(3000, 5000));
         }, randomInteger(2000, 2500));
       }
-      setTimeout(async () => {
-        await channel.sendSlash(botid, "use", "Lucky Horseshoe");
-        !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle("Used a Lucky Horseshoe").setURL(message.url).setDescription(client.user.username + ": Succesfully used a Lucky Horseshoe! ").setColor("#2e3236"));
-      }, randomInteger(5000, 8000));
     }
     // INFO: read alerts
     if (message.embeds[0]?.title?.includes("You have an unread alert!") && message.content?.includes(client.user.id)) {
@@ -311,9 +302,9 @@ async function doEverything(token, Client, client1, channelId) {
     if (message.interaction?.user !== client.user || message.author.id !== botid || !channel) return;
     // autoBuyItem(message, client, acc_bal, acc_bank);
     autoToolBuyer(message, client, acc_bal, acc_bank);
-    autoBuyLife(message, client, acc_bal, acc_bank);
     // autoUseHorse(message, client);
     if (message.author.id !== botid || message.channel.id !== channel.id) return;
+    // }
     playMiniGames(message);
     playFGame(message, channel.id);
     if (message?.flags?.has("EPHEMERAL") && message?.embeds[0]?.description?.includes("You have an ongoing command running.")) {
@@ -376,47 +367,20 @@ async function doEverything(token, Client, client1, channelId) {
         await message.channel.sendSlash(botid, "serverevents payout", main_accId, quantity, name);
       }, randomInteger(config.cooldowns.serverEvents.minDelay, config.cooldowns.serverEvents.maxDelay));
     }
-    if (message.embeds[0]?.title === "Pending Confirmation" && message.interaction?.user == client.user) {
-      highLowRandom(message, 1);
-      // console.log(chalk.yellow("Sold all sellable items."))
-    }
     // INFO: Register captcha
     handleCaptcha(message);
     // INFO: Return if transferOnlyMode is enabled
     if (config.transferOnlyMode) return;
+    if (message.embeds[0]?.title === "Pending Confirmation" && message.interaction?.user == client.user) {
+      highLowRandom(message, 1);
+    }
     // INFO: When receive response of /balance command
     if (message.embeds[0]?.title?.includes(client.user.tag + "'s Balance")) {
-      purse = message.embeds[0].description.split("\n")[0].replace("**Wallet**: ", "");
-      acc_bal = Number(purse.replace("⏣ ", "").replace(/,/g, ''));
+      wallet = message.embeds[0].description.split("\n")[0].replace("**Wallet**: ", "");
+      acc_bal = Number(wallet.replace("⏣ ", "").replace(/,/g, ''));
       bank = message.embeds[0].description.split("\n")[1].replace("**Bank**: ", "");
       acc_bank = Number(bank.replace("⏣ ", "").replace(/,/g, '').replace(" ", "").split("/")[0]);
       net = message.embeds[0].description.split("\n")[6].replace("**Total Net**: ", "");
-      acc_net = Number(net.replace("⏣ ", "").replace(/,/g, ''));
-      if (Users.entries < accounts) {
-        Users.create({
-          name: client.user.tag,
-          wallet: acc_bal,
-          bank: acc_bank,
-          net: acc_net,
-          wallet_unformatted: purse,
-          bank_unformatted: bank,
-          net_unformatted: net,
-        });
-      } else if (Users.entries >= accounts) {
-        const user = Users.get(target => target.name === client.user.tag);
-        user.name = client.user.tag
-        user.wallet = acc_bal
-        user.bank = acc_bank
-        user.net = acc_net
-        user.wallet_unformatted = purse
-        user.bank_unformatted = bank
-        user.net_unformatted = net
-        user.save();
-      }
-      // console.log(JSON.stringify(Users.getAll()))
-      app.get("/api_test", async (req, res) => {
-        res.json(collection);
-      });
     }
     // INFO: Handle Search Command
     if (commandsUsed.includes("search") && message.embeds[0]?.description?.includes("Where do you want to search?")) {
@@ -511,7 +475,7 @@ async function doEverything(token, Client, client1, channelId) {
     var c = randomInteger(config.cooldowns.longBreak.minDelay, config.cooldowns.longBreak.maxDelay);
     randomCommand(client, channel, commandsUsed, true, ongoingCmd);
     // INFO: Deposit money
-    if (config.autoDeposit && randomInteger(0, 50) === 19) {
+    if (config.autoDeposit && randomInteger(0, 50) === 7) {
       await channel.sendSlash(botid, "deposit", "max");
       !config["dontLogUselessThings"] && console.log(chalk.yellow("Deposited all coins in the bank."));
       setTimeout(async () => {
@@ -519,49 +483,27 @@ async function doEverything(token, Client, client1, channelId) {
       }, randomInteger(30000, 70000));
     }
     // INFO: if autoGift is on send inventory command
-    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 90) === 7) {
+    if (!config.transferOnlyMode && config.autoGift && token != config.mainAccount && randomInteger(0, 50) === 7) {
       await channel.sendSlash(botid, "inventory");
     }
     if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
       await channel.sendSlash(botid, "balance");
     }
-    randomInteger(config.cooldowns.checkLifeSaver.minDelay, config.cooldowns.checkLifeSaver.maxDelay);
-    // INFO: Sell All Items if autoSell is on
     if (config.autoSell && token != config.mainAccount && randomInteger(0, 4) === 100) {
       await channel.sendSlash(botid, "sell all");
     }
     // INFO: Logic of taking break
-    if (randomInteger(0, 200) == 50) {
-      !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[34m", " - Taking a break for " + b / 1000 + " seconds.");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Taking a break for " + b / 1000 + " seconds.").setColor('#9bdef6'));
-      isOnBreak = true;
+    if (randomInteger(0, 190) == 50) {
+      !config["dontLogUselessThings"] && console.log(client.user.tag + "\x1b[34m", " - Taking a break for " + b / 1000 + " seconds.");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle(client.user.tag + " - Taking a break for " + b / 1000 + " seconds.").setColor('#9bdef6'));
       setTimeout(async function() {
-        isOnBreak = false;
-        setTimeout(async () => {
-          if (config.autoBuyItems.includes("Life Saver")) await channel.sendSlash(botid, "item", "Life Saver");
-        }, randomInteger(1000, 3000));
         main(channel);
-        config.autoUse.forEach((item) => {
-          setTimeout(async () => {
-            await channel.sendSlash(botid, "use", item);
-          }, randomInteger(12000, 16000));
-        });
       }, b);
-    } else if (randomInteger(0, 850) == 400) {
-      !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[35m", " - Sleeping for " + c / 1000 / 60 + " minutes.");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#9bdef6'))
-      isOnBreak = true;
+    } else if (randomInteger(0, 800) == 450) {
+      !config["dontLogUselessThings"] && console.log(client.user.tag + "\x1b[35m", " - Sleeping for " + c / 1000 / 60 + " minutes.");
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle(client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('##ff0000'))
       setTimeout(async function() {
-        isOnBreak = false;
-        setTimeout(async () => {
-          if (config.autoBuyItems.includes("Life Saver")) await channel.sendSlash(botid, "item", "Life Saver");
-        }, randomInteger(1000, 3000));
         main(channel);
-        config.autoUse.forEach((item) => {
-          setTimeout(async () => {
-            await channel.sendSlash(botid, "use", item);
-          }, randomInteger(12000, 16000));
-        });
       }, c);
     } else {
       setTimeout(async function() {
@@ -712,50 +654,6 @@ async function autoToolBuyer(message, client, acc_bal, acc_bank) {
     }
   }
 }
-async function autoBuyLife(message, client, acc_bal, acc_bank) {
-  if (!message.embeds[0]?.title?.includes("Life Saver") || !message?.embeds[0]?.description?.includes("own") || !config.autoBuyItems.includes("Life Saver")) return;
-  const total_own = message?.description?.replace(",", "").match(/own \*\*(\d+)/)[1];
-  if (!total_own) return;
-  if (Number(total_own) > 0) {} else {
-    if (acc_bal <= 100000 && acc_bank >= 100000) {
-      await message.channel.sendSlash(botid, "withdraw", "100000");
-      setTimeout(async () => {
-        await message.channel.sendSlash(botid, "shop buy", "Life Saver", "1");
-        hook.send(new MessageBuilder().setTitle("Bought Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver ").setColor("#2e3236"));
-      }, randomInteger(3000, 5000));
-    } else {
-      await message.channel.sendSlash(botid, "shop buy", "Life Saver", "1");
-      hook.send(new MessageBuilder().setTitle("Bought Life Saver").setURL(message.url).setDescription(client.user.username + ": Succesfully bought a Life Saver ").setColor("#2e3236"));
-    }
-  }
-}
-async function autoBuyItem(message, client, acc_bal, acc_bank) {
-  // if command not send by user then return
-  if (message.interaction?.user !== client.user) return;
-  let description = message.embeds[0]?.description;
-  var ab = false;
-  for (var a = 0; a < config.autoBuyItems.length; a++) {
-    if (config.autoBuyItems[a]) {
-      ab = true;
-      break;
-    }
-  }
-  if (!ab || !description?.includes("own")) return;
-  const total_own = description.replace(",", "").match(/own \*\*(\d+)/)[1];
-  if (!total_own) return;
-  let item = Object.keys(config.autoBuyItems).find((item) => message.embeds[0]?.title?.includes(item));
-  if (config.autoBuyItems[item]["50/50"] && randomInteger(0, 1) === 0) return;
-  let to_buy = config.autoBuyItems[item]["minimum"] - Number(total_own);
-  if (to_buy <= 0) return;
-  let pricePerItem = config.autoBuyItems[item]["pricePerItem"];
-  if (acc_bal <= (to_buy * pricePerItem) && acc_bank >= (to_buy * pricePerItem)) {
-    await message.channel.sendSlash(botid, "withdraw",
-      (to_buy * pricePerItem).toString());
-  }
-  setTimeout(async () => {
-    await message.channel.sendSlash(botid, "shop buy", item, to_buy.toString());
-  }, randomInteger(2000, 4000));
-}
 async function clickButton(message, btn, once = true) {
   if (once) {
     try {
@@ -820,6 +718,7 @@ async function postMeme(message) {
     config.cooldowns.buttonClick.maxDelay);
 }
 async function handleInventoryCommand(client, token, channel, message) {
+  await message.channel.sendSlash(botid, "inventory")
   setTimeout(async () => {
     var [name, quantity] = message.embeds[0]?.description?.split("\n")[0].split("** ─ ");
     name = name?.split("> ")[1];
@@ -832,7 +731,7 @@ async function handleInventoryCommand(client, token, channel, message) {
     // INFO: when autoGift is enabled and user is not main account
     else if (config.autoGift && token != config.mainAccount) {
       await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
-      console.log(chalk.blue(client.user.tag + " Shared " + quantity + " " + name + " for 1 coin"));
+      console.log(chalk.blue(client.user.tag + " Shared " + quantity + " " + name + " to main account."));
     }
   }, randomInteger(300, 700));
 }
@@ -848,7 +747,7 @@ async function handleCaptcha(message) {
     hook.send(captcha);
     for (var a = 0; a <= 3; a++) {
       var buttomEmoji = components[a].emoji.id;
-      console.log("buttonEMoji" + buttomEmoji);
+      console.log("buttonEmoji" + buttomEmoji);
       hook.send(buttomEmoji);
       if (captcha.includes(buttomEmoji)) {
         console.log(components[a].customId);
@@ -913,7 +812,7 @@ console.log = function() {
     var hour = date.getHours() + 7;
     var minutes = date.getMinutes();
     var seconds = date.getSeconds();
-    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] ' )
+    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] ')
   }
   log.apply(console, [formatConsoleDate(new Date()) + first_parameter].concat(other_parameters));
 };

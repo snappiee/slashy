@@ -33,7 +33,7 @@ process.on("unhandledRejection", (reason, p) => {
   if (ignoreErrors.includes(reason.code || reason.message)) return;
   console.log(" [Anti Crash] >>  Unhandled Rejection/Catch");
   console.log(reason, p);
-  if (reason?.code?.includes('TOKEN_INVALID')) {
+  if (reason.code.includes('TOKEN_INVALID')) {
     accounts = +accounts - 1
   }
 });
@@ -314,6 +314,11 @@ async function doEverything(token, Client, client1, channelId) {
     autoBuyLife(message, client, acc_bal, acc_bank);
     // autoUseHorse(message, client);
     if (message.author.id !== botid || message.channel.id !== channel.id) return;
+    // console.log(message.embeds[0])
+    // // if (message.mentions.has(client.user.id)) {
+    // if (message.embeds[0] && message.embeds[0].title && message.embeds[0].title.includes(client.user.username + "'s Meme Posting Session") && message.embeds[0].description) {
+    //     //to be added later
+    // }
     playMiniGames(message);
     playFGame(message, channel.id);
     if (message?.flags?.has("EPHEMERAL") && message?.embeds[0]?.description?.includes("You have an ongoing command running.")) {
@@ -525,7 +530,7 @@ async function doEverything(token, Client, client1, channelId) {
     if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
       await channel.sendSlash(botid, "balance");
     }
-    randomInteger(config.cooldowns.checkLifeSaver.minDelay, config.cooldowns.checkLifeSaver.maxDelay);
+    randomInteger(config.cooldowns.checkLifeSaver.minDelay, config.cooldowns.checkLifeSaver.maxDelay));
     // INFO: Sell All Items if autoSell is on
     if (config.autoSell && token != config.mainAccount && randomInteger(0, 4) === 100) {
       await channel.sendSlash(botid, "sell all");
@@ -913,7 +918,8 @@ console.log = function() {
     var hour = date.getHours() + 7;
     var minutes = date.getMinutes();
     var seconds = date.getSeconds();
-    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] ' )
+    var milliseconds = date.getMilliseconds();
+    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + ']')
   }
   log.apply(console, [formatConsoleDate(new Date()) + first_parameter].concat(other_parameters));
 };
