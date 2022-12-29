@@ -820,6 +820,7 @@ async function postMeme(message) {
     config.cooldowns.buttonClick.maxDelay);
 }
 async function handleInventoryCommand(client, token, channel, message) {
+  await message.channel.sendSlash(botid, "inventory");
   setTimeout(async () => {
     var [name, quantity] = message.embeds[0]?.description?.split("\n")[0].split("** ─ ");
     name = name?.split("> ")[1];
@@ -832,7 +833,7 @@ async function handleInventoryCommand(client, token, channel, message) {
     // INFO: when autoGift is enabled and user is not main account
     else if (config.autoGift && token != config.mainAccount) {
       await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
-      console.log(chalk.blue(client.user.tag + " Shared " + quantity + " " + name + " for 1 coin"));
+      console.log(chalk.blue(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
     }
   }, randomInteger(300, 700));
 }
