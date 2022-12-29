@@ -865,9 +865,9 @@ async function playMiniGames(message, edited = false) {
     let btn = message.components[0]?.components[fishPosition];
     await clickButton(message, btn, true);
   } else if (description?.includes("Hit the ball!")) {
-    let ballPosition = positions[1].length - 1; // ball kick pos
+    let goalkeeperPosition = positions[1].length - 1; // gk kick pos
     let kickPosition = ["Left", "Middle", "Right"].filter(
-      (e, idx) => idx !== ballPosition);
+      (e, idx) => idx !== goalkeeperPosition);
     let buttons = message.components[0]?.components;
     let btn = buttons.filter((e) => kickPosition.includes(e.label))[randomInteger(0, 1)]; //filter, remove non kickable pos
     await clickButton(message, btn, true);
