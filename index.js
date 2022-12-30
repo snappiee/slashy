@@ -523,7 +523,7 @@ async function doEverything(token, Client, client1, channelId) {
     if (config.autoGift && token != config.mainAccount && randomInteger(0, 90) === 7) {
       await channel.sendSlash(botid, "inventory");
     }
-    if (!config.transferOnlyMode && randomInteger(0, 30) === 3) {
+    if (!config.transferOnlyMode && randomInteger(0, 80) === 3) {
       await channel.sendSlash(botid, "balance");
     }
 
@@ -548,7 +548,7 @@ async function doEverything(token, Client, client1, channelId) {
           }, randomInteger(12000, 16000));
         });
       }, b);
-    } else if (randomInteger(0, 1400) == 600) {
+    } else if (randomInteger(0, 1700) == 600) {
       !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[35m", " - Sleeping for " + c / 1000 / 60 + " minutes.");
       !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#9bdef6'))
       isOnBreak = true;
@@ -791,6 +791,7 @@ async function postMeme(message) {
     config.cooldowns.buttonClick.minDelay * 1.2,
     config.cooldowns.buttonClick.maxDelay);
 }
+
 async function handleInventoryCommand(client, token, channel, message) {
   await message.channel.sendSlash(botid, "inventory");
   setTimeout(async () => {
@@ -800,12 +801,36 @@ async function handleInventoryCommand(client, token, channel, message) {
     isInventoryEmpty = name != undefined;
     // INFO: if serverEventsDonateMode enabled
     if (config.serverEventsDonateMode) {
-      await message.channel.sendSlash(botid, "serverevents donate", quantity, name);
+      if (config.TradeBlacklist) {
+        if (name == "Trivia Trophy") {
+          var [name, quantity] = message.embeds[0]?.description?.split("\n")[3].split("** ─ ");
+          name = name?.split("> ")[1];
+          console.log(chalk.blue(client.user.tag + " " + name + ": " + quantity));
+          await message.channel.sendSlash(botid, "serverevents donate", quantity, name);
+        } else {
+          await message.channel.sendSlash(botid, "serverevents donate", quantity, name);
+        }
+      } else {
+        await message.channel.sendSlash(botid, "serverevents donate", quantity, name);
+      }
     }
     // INFO: when autoGift is enabled and user is not main account
     else if (config.autoGift && token != config.mainAccount) {
-      await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
-      console.log(chalk.red(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
+      if (config.TradeBlacklist) {
+        if (name == "Trivia Trophy") {
+        var [name, quantity] = message.embeds[0]?.description?.split("\n")[3].split("** ─ ");
+        name = name?.split("> ")[1];
+        console.log(chalk.blue(client.user.tag + " " + name + ": " + quantity));
+        await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
+        console.log(chalk.red(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
+        } else {
+        await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
+        console.log(chalk.red(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
+        }
+      } else {
+        await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
+        console.log(chalk.red(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
+      }
     }
   }, randomInteger(300, 700));
 }
