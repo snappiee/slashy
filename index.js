@@ -550,7 +550,7 @@ async function doEverything(token, Client, client1, channelId) {
       }, b);
     } else if (randomInteger(0, 1700) == 600) {
       !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[35m", " - Sleeping for " + c / 1000 / 60 + " minutes.");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#9bdef6'))
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#ffffff'))
       isOnBreak = true;
       setTimeout(async function() {
         isOnBreak = false;
