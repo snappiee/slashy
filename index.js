@@ -1,3 +1,4 @@
+
 var version = "1.8.7";
 // Version 1.8.7
 const axios = require("axios");
@@ -520,7 +521,7 @@ async function doEverything(token, Client, client1, channelId) {
       }, randomInteger(30000, 70000));
     }
     // INFO: if autoGift is on send inventory command
-    if (config.autoGift && token != config.mainAccount && randomInteger(0, 90) === 7) {
+    if (config.autoGift && token != config.mainAccount && randomInteger(0, 50) === 7) {
       await channel.sendSlash(botid, "inventory");
     }
     if (!config.transferOnlyMode && randomInteger(0, 80) === 3) {
@@ -548,9 +549,9 @@ async function doEverything(token, Client, client1, channelId) {
           }, randomInteger(12000, 16000));
         });
       }, b);
-    } else if (randomInteger(0, 1700) == 600) {
+    } else if (randomInteger(0, 1200) == 600) {
       !config["dontLogUselessThings"] && console.log( client.user.tag + "\x1b[35m", " - Sleeping for " + c / 1000 / 60 + " minutes.");
-      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#ffffff'))
+      !config["dontLogUselessThings"] && hook.send(new MessageBuilder().setTitle( client.user.tag + " - Sleeping for " + c / 1000 / 60 + " minutes.").setColor('#000000'))
       isOnBreak = true;
       setTimeout(async function() {
         isOnBreak = false;
@@ -587,13 +588,28 @@ async function randomCommand(client, channel, commandsUsed, isBotFree, ongoingCm
       !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - " + chalk.blue("[DEBUG]") + " /" + command);
       commandsUsed.push(command);
       handleCommand(commandsUsed, command, 15000);
+    } else if (command === "gamble") {
+      await channel.sendSlash(botid, command, config.autoScratch.scratchAmount);
+      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - " + chalk.blue("[DEBUG]") + " /" + command);
+      commandsUsed.push(command);
+      handleCommand(commandsUsed, command, 15000);
+    } else if (command === "snakeeyes") {
+      await channel.sendSlash(botid, command, config.autoScratch.scratchAmount);
+      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - " + chalk.blue("[DEBUG]") + " /" + command);
+      commandsUsed.push(command);
+      handleCommand(commandsUsed, command, 15000);
+    } if (command === "slots") {
+      await channel.sendSlash(botid, command, config.autoScratch.scratchAmount);
+      !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - " + chalk.blue("[DEBUG]") + " /" + command);
+      commandsUsed.push(command);
+      handleCommand(commandsUsed, command, 15000);
     } else {
       await channel.sendSlash(botid, command);
       !config["dontLogUselessThings"] && console.log("\x1b[0m", client.user.tag + " - " + chalk.blue("[DEBUG]") + " /" + command);
       commandsUsed.push(command);
       handleCommand(commandsUsed, command, 53000);
     }
-    if (command === "scratch" || command === "postmemes" || command === "highlow" || command === "trivia" || command === "search" || command === "crime" || command === "stream") {
+    if (command === "scratch" || command === "postmemes" || command === "highlow" || command === "trivia" || command === "search" || command === "crime" || command === "stream" || command === "snakeeyes" || command === "slots" || command === "gamble") {
       isBotFree = false;
     }
     // isBotFree = false;
@@ -827,10 +843,7 @@ async function handleInventoryCommand(client, token, channel, message) {
         await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
         console.log(chalk.red(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
         }
-      } else {
-        await channel.sendSlash(botid, "friends share items", client1.user.id, quantity, name);
-        console.log(chalk.red(client.user.tag + " Shared " + quantity + " " + name + " to main account"));
-      }
+      } 
     }
   }, randomInteger(300, 700));
 }
@@ -911,7 +924,7 @@ console.log = function() {
     var hour = date.getHours() + 7;
     var minutes = date.getMinutes();
     var seconds = date.getSeconds();
-    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] ' )
+    return chalk.magenta('[' + ((hour < 10) ? '0' + hour : hour) + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds) + '] ')
   }
   log.apply(console, [formatConsoleDate(new Date()) + first_parameter].concat(other_parameters));
 };
